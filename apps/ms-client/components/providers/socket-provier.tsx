@@ -1,6 +1,6 @@
 'use client'
 
-import { Manager } from '@/libs/Manager'
+import { Manager } from '@/lib/Manager'
 import { createContext, FC, ReactNode } from 'react'
 import { Socket } from 'socket.io-client'
 

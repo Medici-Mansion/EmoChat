@@ -1,8 +1,11 @@
 {
   "name": "ms-messenger",
   "type": "module",
-  "version" :"0.0.1",
-  "private" : true,
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev"
+  },
   "devDependencies": {
     "bun-types": "latest",
     "turbo": "^1.10.15"
