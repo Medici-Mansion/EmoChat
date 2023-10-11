@@ -1,0 +1,20 @@
+{
+  "name": "ms-messenger",
+  "type": "module",
+  "version" :"0.0.1",
+  "private" : true,
+  "devDependencies": {
+    "bun-types": "latest",
+    "turbo": "^1.10.15"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "dotenv-cli": "^7.0.0"
+  },
+  "workspaces": ["apps/*"]
+}
