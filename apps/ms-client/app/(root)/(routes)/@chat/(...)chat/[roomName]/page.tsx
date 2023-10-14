@@ -107,7 +107,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
         })
         if (
           (emotionRef.current !== key && cnt < 10 && key !== 'neutral') ||
-          (emotionRef.current !== key && cnt - checkCnt.current > 10)
+          (emotionRef.current !== key && cnt - checkCnt.current > 6)
         ) {
           console.log(emotionRef.current, '<emotionRef.current')
           console.log(key, '<key')
