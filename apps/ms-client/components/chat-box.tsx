@@ -55,7 +55,10 @@ const ChatBox = ({
             type: 'tween',
             duration: 0.1,
           }}
-          className="flex space-x-2 items-end"
+          className={cn(
+            'flex space-x-2 items-end',
+            !isMe && 'flex-row-reverse',
+          )}
           style={
             font
               ? {
