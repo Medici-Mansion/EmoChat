@@ -32,7 +32,7 @@ const ChatBox = ({
   return (
     <motion.div
       className={cn(
-        'flex items-start gap-x-1 py-2 w-full relative',
+        'flex items-start gap-x-1 w-full relative',
         isMe ? 'pr-2 pl-10 flex-row-reverse' : 'pr-10 pl-2',
       )}
     >
@@ -56,8 +56,8 @@ const ChatBox = ({
             duration: 0.1,
           }}
           className={cn(
-            'flex space-x-2 items-end',
-            !isMe && 'flex-row-reverse',
+            'flex items-end',
+            !isMe ? 'flex-row-reverse' : 'space-x-2',
           )}
           style={
             font
@@ -67,7 +67,9 @@ const ChatBox = ({
               : {}
           }
         >
-          <span className="text-xs">{generateTimeString(createdAt)}</span>
+          <span className={cn('text-xs', !isMe && 'ml-2')}>
+            {generateTimeString(createdAt)}
+          </span>
           <div
             className={cn(
               'rounded-md px-6 py-4 max-x-sm relative group text-2xl ',
