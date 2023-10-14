@@ -51,7 +51,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('SEND_MESSAGE')
-  handleSendMEssage(
+  async handleSendMEssage(
     @ConnectedSocket() client: Socket,
     @MessageBody() message: SendMessageDto,
   ) {
@@ -59,9 +59,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       data: { roomName, nickname },
     } = client;
 
-    this.io.server
-      .to(roomName)
-      .emit('RESERVE_MESSAGE', { message, nickname, id: client.id });
+    const currentFont =
+      await this.sentimentsService.getFontByEmotionAndSentiment(
+        message.sentiment,
+      );
+
+    this.io.server.to(roomName).emit('RESERVE_MESSAGE', {
+      message,
+      nickname,
+      id: client.id,
+      font: currentFont?.[0],
+    });
   }
 
   @SubscribeMessage('USER_SETTING')

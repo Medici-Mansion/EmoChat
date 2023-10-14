@@ -3,15 +3,17 @@ import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { ReactNode } from 'react'
 import { Label } from './ui/label'
+import { Font } from '@/socket'
 
 type ChatBoxProps = {
   isMe: boolean
   content: string
   emotion: string
   sender: string
+  font?: Font
 }
 
-const ChatBox = ({ content, isMe, emotion, sender }: ChatBoxProps) => {
+const ChatBox = ({ content, isMe, emotion, font, sender }: ChatBoxProps) => {
   return (
     <motion.div
       className={cn(
@@ -43,6 +45,13 @@ const ChatBox = ({ content, isMe, emotion, sender }: ChatBoxProps) => {
               ? 'origin-right bg-card-foreground text-black'
               : 'origin-left bg-primary/10',
           )}
+          style={
+            font
+              ? {
+                  fontFamily: `var(--font-${font.code})`,
+                }
+              : {}
+          }
         >
           {content}
         </motion.div>

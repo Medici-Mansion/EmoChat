@@ -27,7 +27,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
   const chatScroller = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream>()
-  const emotionRef = useRef<string>('')
+  const emotionRef = useRef<string>('neutral')
   const checkCnt = useRef<number>(0)
 
   const { socket } = useSocket({
@@ -39,6 +39,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
       })
 
       socket.listen('RESERVE_MESSAGE', (sender) => {
+        console.log(sender, '<<sender')
         setMessage((prev) => [...prev, sender])
         requestIdleCallback(() => {
           if (chatScroller?.current) {
@@ -104,11 +105,12 @@ const RoomPage = ({ params: { roomName } }: any) => {
             key = k
           }
         })
-
         if (
-          (emotionRef.current === 'neutral' && cnt < 10) ||
+          (emotionRef.current !== key && cnt < 10 && key !== 'neutral') ||
           (emotionRef.current !== key && cnt - checkCnt.current > 10)
         ) {
+          console.log(emotionRef.current, '<emotionRef.current')
+          console.log(key, '<key')
           socket.emit('GET_SENTIMENTS', key, (sentiments: Sentiment[]) => {
             if (key === 'neutral') {
               form.resetField('sentiment')
@@ -170,9 +172,10 @@ const RoomPage = ({ params: { roomName } }: any) => {
         className="relative grow h-screen overflow-y-scroll"
       >
         <div className="min-h-[calc(100vh-52px)] mt-4">
-          {messages.map(({ id, message, nickname }, index) => (
+          {messages.map(({ id, message, nickname, font }, index) => (
             <ChatBox
               sender={nickname}
+              font={font}
               content={message.message}
               emotion={message.emotion}
               isMe={id === socket.id}
@@ -219,6 +222,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
                     setIsEdit(false)
                   }
                 },
+                required: 'Message is required.',
               })}
             />
             <button

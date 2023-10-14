@@ -4,6 +4,13 @@ interface Room {
   name: string
   count: number
 }
+
+interface Font {
+  id: string
+  code: number
+  alias: string
+  name: string
+}
 interface Message {
   message: string
   emotion: string
@@ -13,6 +20,7 @@ export interface ReservedMessage {
   id: string
   message: Message
   nickname: string
+  font?: Font
 }
 
 interface ServerToClientEvents {
