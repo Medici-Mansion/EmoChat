@@ -1,0 +1,141 @@
+@import url(https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@1.0/nanumsquare.css);
+@import url('https://fonts.googleapis.com/css2?family=Black+And+White+Picture&family=East+Sea+Dokdo&family=Nanum+Brush+Script&family=Single+Day&display=swap');
+
+@font-face {
+  font-family: 'BMEuljiro10yearslater';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10-21@1.0/BMEuljiro10yearslater.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cafe24Ssukssuk';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Ssukssuk.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'CookieRun-Regular';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DOSGothic';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_eight@1.0/DOSGothic.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'HSGyoulnoonkot';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/HSGyoulnoonkot.woff')
+    format('woff');
+  font-weight: bold;
+  font-style: normal;
+}
+
+// FIXME
+@font-face {
+  font-family: 'hypmokgak-bold';
+  src:
+    url('https://blogfonts.com/fonts/h/845/131845/file/korean.H2MkpB.ttf')
+      format('woff'),
+    url('https://blogfonts.com/fonts/h/845/131845/file/korean.H2MkpB.ttf')
+      format('opentype'),
+    url('https://blogfonts.com/fonts/h/845/131845/file/korean.H2MkpB.ttf')
+      format('truetype');
+}
+
+@font-face {
+  font-family: 'Jeju Hallasan';
+  font-style: normal;
+  font-weight: 400;
+  src: url(//fonts.gstatic.com/ea/jejuhallasan/v3/JejuHallasan-Regular.eot);
+  src:
+    url(//fonts.gstatic.com/ea/jejuhallasan/v3/JejuHallasan-Regular.eot?#iefix)
+      format('embedded-opentype'),
+    url(//fonts.gstatic.com/ea/jejuhallasan/v3/JejuHallasan-Regular.woff2)
+      format('woff2'),
+    url(//fonts.gstatic.com/ea/jejuhallasan/v3/JejuHallasan-Regular.woff)
+      format('woff'),
+    url(//fonts.gstatic.com/ea/jejuhallasan/v3/JejuHallasan-Regular.ttf)
+      format('truetype');
+}
+@font-face {
+  font-family: 'JSArirangHON-Regular';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/JSArirangHON-RegularA1.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'MapoDacapo';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/MapoDacapoA.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'MapoHongdaeFreedom';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/MapoHongdaeFreedomA.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Jayoo';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/naverfont_06@1.0/Jayoo.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'gabia_napjakBlock';
+  font-weight: normal;
+  font-style: normal;
+  src: url('https://cdn.jsdelivr.net/gh/webfontworld/gabia/gabia_napjakBlock.woff')
+    format('woff');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SANGJUDajungdagam';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2112@1.0/SANGJUDajungdagam.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'WindyLavender';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.0/WindyLavender.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Jeonju_gakR';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2102-01@1.0/Jeonju_gakR.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'DX납량특집';
+  src: url('/fonts/DXHmchL-KSCpc-EUC-H.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'HanS CalliPunch';
+  src: url('/fonts/HanS CalliPunch.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Rix토이그레이';
+  src: url('/fonts/RixToyGray.ttf');
+  font-weight: normal;
+  font-style: normal;
+}

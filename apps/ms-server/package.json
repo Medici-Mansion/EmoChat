@@ -20,7 +20,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "generate": "drizzle-kit generate:pg",
-    "push" : "drizzle-kit push:pg"
+    "push" : "drizzle-kit push:pg",
+    "drizzle:seed": "bun seed.ts"
+
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

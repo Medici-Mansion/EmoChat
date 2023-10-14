@@ -1,4 +1,5 @@
 import { SocketContext } from '@/components/providers/socket-provier'
+import { Room } from '@/socket'
 import { useEffect, useRef, useState } from 'react'
 import { useContext } from 'react'
 import { Socket } from 'socket.io-client'
@@ -8,7 +9,7 @@ interface useSocketProps {
   onConnect?: (socket: Socket) => void
   onUnmounted?: (socket: Socket) => void
   onMounted?: (socket: Socket) => void
-  onRoomChanged?: (rooms: string[]) => void
+  onRoomChanged?: (rooms: Room[]) => void
 }
 
 const useSocket = ({
@@ -22,8 +23,12 @@ const useSocket = ({
   if (!manager) {
     throw new Error('Provier is not founded.')
   }
+
+  if (typeof window === 'undefined') {
+    throw new Error("This hook can't use on server-side.")
+  }
   const [isError, setIsError] = useState<string | null>(null)
-  const [socket, setSocket] = useState(manager.create_socket(nsp))
+  const socket = useRef(manager.create_socket(nsp)).current
 
   useEffect(() => {
     if (socket) {
@@ -38,7 +43,7 @@ const useSocket = ({
         }
         onConnect && onConnect(socket)
       })
-      socket.listen('ROOM_CHANGE', (rooms) => {
+      socket.on('ROOM_CHANGE', (rooms) => {
         if (isError) {
           setIsError(null)
         }
@@ -53,7 +58,7 @@ const useSocket = ({
     return () => {
       onUnmounted && onUnmounted(socket)
     }
-  }, [onMounted, onUnmounted, socket])
+  }, [socket])
   return {
     manager,
     socket: socket,

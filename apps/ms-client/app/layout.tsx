@@ -4,8 +4,7 @@ import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { QueryProvider } from '@/components/providers/query-provider'
 import SocketProvider from '@/components/providers/socket-provier'
-
-const inter = Inter({ subsets: ['latin'] })
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -19,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={cn('overflow-hidden')}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

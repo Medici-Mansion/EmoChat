@@ -3,18 +3,29 @@
 import { Manager } from '@/lib/Manager'
 import {
   createContext,
-  FC,
+  Dispatch,
   PropsWithChildren,
-  ReactNode,
+  SetStateAction,
   useRef,
   useState,
 } from 'react'
-import { Socket } from 'socket.io-client'
+
+interface SocketData {
+  id: string
+  nickname: string
+}
 
 export const SocketContext = createContext<{
-  socket: Socket | null
+  info: SocketData | null
   manager: Manager
-} | null>(null)
+  setInfo: Dispatch<SetStateAction<SocketData | null>> | null
+}>({
+  manager: new Manager(process.env.NEXT_PUBLIC_SITE_URL, {
+    transports: ['websocket'],
+  }),
+  info: null,
+  setInfo: null,
+})
 
 const SocketProvider = ({ children }: PropsWithChildren) => {
   const manager = useRef(
@@ -22,8 +33,10 @@ const SocketProvider = ({ children }: PropsWithChildren) => {
       transports: ['websocket'],
     }),
   ).current
+
+  const [info, setInfo] = useState<SocketData | null>(null)
   return (
-    <SocketContext.Provider value={{ manager, socket: null }}>
+    <SocketContext.Provider value={{ manager, info, setInfo }}>
       {children}
     </SocketContext.Provider>
   )
