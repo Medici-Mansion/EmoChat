@@ -12,4 +12,4 @@ export const schema = {
   ...Sentiment,
   ...Font,
 };
-export type DBMoudle = NodePgDatabase<typeof schema>;
+export type Repository = NodePgDatabase<typeof schema>;

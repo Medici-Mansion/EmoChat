@@ -18,7 +18,7 @@ export const FontMappingRelations = relations(FontMappingModel, ({ one }) => ({
     references: [FontModel.id],
   }),
   emotion: one(EmotionModel, {
-    fields: [FontMappingRelations.emotionId],
+    fields: [FontMappingModel.emotionId],
     references: [EmotionModel.id],
   }),
   sentiment: one(SentimentModel, {

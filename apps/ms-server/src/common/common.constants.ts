@@ -1,1 +1,1 @@
-export const DRIZZLE_MODULE = 'DRIZZLE_MODULE';
+export const DB_MODULE = 'DB_MODULE';
