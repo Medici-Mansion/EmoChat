@@ -9,7 +9,7 @@ export class Manager extends M {
     if (this.sockets.hasOwnProperty(nsp)) {
       return this.sockets[nsp]
     }
-    const socket = this.socket(nsp, opts)
+    const socket = this.socket(nsp, opts) as Socket
 
     socket.listen = function bindEventListnerOnSocket(ev, lisnter) {
       if (this.hasListeners(ev)) {

@@ -13,6 +13,7 @@ const MainPageClient = () => {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const startVideo = async () => {
+    if (typeof window === undefined) return
     Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
       faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
@@ -42,10 +43,7 @@ const MainPageClient = () => {
     })
   }
   useEffect(() => {
-    socket.emit('events', '123', (data: string) => {
-      console.log(data)
-    })
-    startVideo()
+    // startVideo()
   }, [socket])
   return (
     <div>

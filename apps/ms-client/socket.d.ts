@@ -1,15 +1,20 @@
-import type { Socket as S, SocketReservedEvents } from 'socket.io-client'
-declare module 'socket.io-client' {
-  interface Socket extends S<ServerToClientEvents, ClientToServerEvents> {
-    listen: S<ServerToClientEvents, ClientToServerEvents>['on']
-  }
-}
+import type { Socket as S } from 'socket.io-client'
 
 type Room = string
 
-interface ServerToClientEvents extends SocketReservedEvents {
+interface ServerToClientEvents {
   ROOM_CHANGE: (rooms: Room[]) => void
   WELCOME: (message: string) => void
 }
 
-interface ClientToServerEvents {}
+interface ClientToServerEvents {
+  CONFIG: (data: string) => void
+}
+
+class DefaultSocket extends S<ServerToClientEvents, ClientToServerEvents> {}
+
+declare module 'socket.io-client' {
+  export declare class Socket extends DefaultSocket {
+    listen: S<ServerToClientEvents>['on']
+  }
+}

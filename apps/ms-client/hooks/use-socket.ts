@@ -18,48 +18,48 @@ const useSocket = ({
   onMounted,
   onRoomChanged,
 }: useSocketProps) => {
-  const { manager } = useContext(SocketContext)
+  const { manager } = useContext(SocketContext) || {}
+  if (!manager) {
+    throw new Error('Provier is not founded.')
+  }
   const [isError, setIsError] = useState<string | null>(null)
+  const [socket, setSocket] = useState(manager.create_socket(nsp))
 
-  const socket = useRef(manager.create_socket(nsp))
   useEffect(() => {
-    if (socket.current) {
-      socket.current.listen('connect_error', ({ message }: Error) => {
+    if (socket) {
+      socket.listen('connect_error', ({ message }: Error) => {
         if (!isError) {
           setIsError(message)
         }
       })
-      socket.current.listen('connect', () => {
+      socket.listen('connect', () => {
         if (isError) {
           setIsError(null)
         }
-        onConnect && onConnect(socket.current)
+        onConnect && onConnect(socket)
       })
-      socket.current.listen('ROOM_CHANGE', (rooms) => {
+      socket.listen('ROOM_CHANGE', (rooms) => {
         if (isError) {
           setIsError(null)
         }
         onRoomChanged && onRoomChanged(rooms)
       })
-      // socket.current.listen('WELCOME', (data) => {
-
-      // })
     }
-  }, [isError, onConnect, onRoomChanged])
+  }, [isError, onConnect, onRoomChanged, socket])
   useEffect(() => {
-    if (socket.current) {
-      onMounted && onMounted(socket.current)
+    if (socket) {
+      onMounted && onMounted(socket)
     }
     return () => {
-      onUnmounted && onUnmounted(socket.current)
+      onUnmounted && onUnmounted(socket)
     }
-  }, [onMounted, onUnmounted])
+  }, [onMounted, onUnmounted, socket])
   return {
     manager,
-    socket: socket.current,
+    socket: socket,
     isError,
-    isConnected: socket.current.connected,
-    isLoading: !socket.current,
+    isConnected: socket.connected,
+    isLoading: !socket,
   }
 }
 
