@@ -1,3 +1,4 @@
+'use client'
 import { SocketContext } from '@/components/providers/socket-provier'
 import { Room } from '@/socket'
 import { useEffect, useRef, useState } from 'react'
@@ -24,9 +25,6 @@ const useSocket = ({
     throw new Error('Provier is not founded.')
   }
 
-  if (typeof window === 'undefined') {
-    throw new Error("This hook can't use on server-side.")
-  }
   const [isError, setIsError] = useState<string | null>(null)
   const socket = useRef(manager.create_socket(nsp)).current
 
