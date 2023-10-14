@@ -2,8 +2,7 @@ import { UserModel } from '@/db/models/user.model';
 import { DB_MODULE } from '@/common/common.constants';
 import { Repository } from '@/db/models';
 import { Inject, Injectable } from '@nestjs/common';
-import { InferInsertModel, eq } from 'drizzle-orm';
-import { PgUpdateSetSource } from 'drizzle-orm/pg-core';
+import { eq } from 'drizzle-orm';
 import { CreateUserDto, EditUserDto } from './users.dto';
 
 @Injectable()

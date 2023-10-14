@@ -1,3 +1,4 @@
+import { SentimentsService } from './../sentiments/sentiments.service';
 import { UserModel } from './../db/models/user.model';
 import { UsersService } from '@/users/users.service';
 import {
@@ -15,6 +16,8 @@ import { Logger } from '@nestjs/common';
 import { Socket } from '@/chat/types/socket.types';
 import { EditUserDto } from '@/users/users.dto';
 import { InferSelectModel } from 'drizzle-orm';
+import { SendMessageDto } from './dtos/message.dto';
+import { randomInt } from 'crypto';
 
 @WebSocketGateway({
   cors: {
@@ -23,40 +26,42 @@ import { InferSelectModel } from 'drizzle-orm';
   namespace: '/',
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly sentimentsService: SentimentsService,
+  ) {}
   @WebSocketServer() private readonly io: Namespace;
   private readonly logger: Logger = new Logger(ChatGateway.name);
 
   @SubscribeMessage('JOIN_ROOM')
   handleJoinRoom(
     @ConnectedSocket()
-    socket: Socket,
+    client: Socket,
     @MessageBody() roomName: string,
   ) {
-    console.log('??');
-    socket.join(roomName);
-    socket.to(roomName).emit('WELCOME');
+    client.join(roomName);
+    client.data.roomName = roomName;
+    client.to(roomName).emit('WELCOME', client.data);
     this.serverRoomChange();
   }
 
   @SubscribeMessage('EXIT_ROOM')
   handleExitRoom(@ConnectedSocket() client: Socket) {
-    const {
-      data: { roomName, nickname },
-    } = client;
-    this.io.server.to(roomName).emit('USER_EXIT', nickname);
     this.exitRoom(client);
   }
 
   @SubscribeMessage('SEND_MESSAGE')
   handleSendMEssage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() message: string,
+    @MessageBody() message: SendMessageDto,
   ) {
     const {
       data: { roomName, nickname },
     } = client;
-    this.io.server.to(roomName).emit('RESERVE_MESSAGE', { message, nickname });
+
+    this.io.server
+      .to(roomName)
+      .emit('RESERVE_MESSAGE', { message, nickname, id: client.id });
   }
 
   @SubscribeMessage('USER_SETTING')
@@ -90,17 +95,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return user;
   }
 
+  @SubscribeMessage('GET_SENTIMENTS')
+  async getSentimentsByEmotion(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() emotion: string,
+  ) {
+    return this.sentimentsService.getSentimentsByEmotion(emotion);
+  }
+
   handleConnection(@ConnectedSocket() client: Socket) {
     this.logger.debug(`CONNECTED : ${client.id}`);
     this.logger.debug(`NAMESPACE : ${client.nsp.name}`);
 
-    this.newUserJoinbroadcast(client);
+    client.data.nickname = '익명#' + randomInt(100000);
+    this.serverRoomChange();
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     this.logger.log(`DISCONNECTED : ${client.id}`);
     this.exitRoom(client);
-    this.serverRoomChange();
+    this.io.server.of('/').adapter.del(client.id, client.id);
   }
 
   private editUserSetting(client: Socket, editUserDto: EditUserDto) {
@@ -109,8 +123,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private exitRoom(client: Socket) {
+    const {
+      data: { roomName, nickname },
+    } = client;
+    client.leave(roomName);
+    this.io.server.to(roomName).emit('USER_EXIT', nickname);
     client.data.roomName = null;
     client.rooms.clear();
+    this.serverRoomChange();
   }
 
   private serverRoomChange(roomChangeArgs?: Partial<GetServerRoomDto>) {
@@ -118,17 +138,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const {
       adapter: { rooms, sids },
     } = this.io.server.of('/');
-    const AllRooms = Array.from(rooms.keys()).filter(
-      (key) => sids.get(key) === undefined,
-    );
+    const AllRooms = Array.from(rooms.keys())
+      .filter((key) => {
+        return sids.get(key) === undefined;
+      })
+      .map((name) => {
+        return {
+          name: decodeURIComponent(name),
+          count: rooms.get(name).size,
+        };
+      });
+
     if (isEmit) {
       this.io.server.emit('ROOM_CHANGE', AllRooms);
     }
     return AllRooms;
-  }
-
-  private newUserJoinbroadcast(joinedUser: Socket) {
-    joinedUser.emit('WELCOME');
-    this.serverRoomChange();
   }
 }

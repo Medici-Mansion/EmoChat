@@ -6,6 +6,7 @@ import { FontMappingModel } from './font-mapping.model';
 export const EmotionModel = pgTable('emotion', {
   ...CoreModel,
   name: text('name'),
+  title: text('title'),
 });
 const EmotionModelRelations = relations(EmotionModel, ({ many }) => ({
   fontToEmotion: many(FontMappingModel),
