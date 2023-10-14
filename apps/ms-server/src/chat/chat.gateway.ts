@@ -18,6 +18,8 @@ import { EditUserDto } from '@/users/users.dto';
 import { InferSelectModel } from 'drizzle-orm';
 import { SendMessageDto } from './dtos/message.dto';
 import { randomInt } from 'crypto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CreateMessageDto } from '@/messages/message.dto';
 
 @WebSocketGateway({
   cors: {
@@ -29,6 +31,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly usersService: UsersService,
     private readonly sentimentsService: SentimentsService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
   @WebSocketServer() private readonly io: Namespace;
   private readonly logger: Logger = new Logger(ChatGateway.name);
@@ -64,11 +67,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         message.sentiment,
       );
 
+    const font = currentFont?.[0];
+    const messageCreatedDto: CreateMessageDto = {
+      emotionTitle: message.emotion,
+      mappingId: font?.mappingId,
+      nickName: client.data.nickname,
+      room: roomName,
+      text: message.message,
+    };
+
+    this.eventEmitter.emit('message.created', messageCreatedDto);
+
     this.io.server.to(roomName).emit('RESERVE_MESSAGE', {
       message,
       nickname,
       id: client.id,
-      font: currentFont?.[0],
+      font,
     });
   }
 

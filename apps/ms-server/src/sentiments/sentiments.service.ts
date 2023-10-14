@@ -44,6 +44,7 @@ export class SentimentsService {
         code: FontModel.code,
         alias: FontModel.alias,
         name: FontModel.name,
+        mappingId: getMappingData.id,
       })
       .from(FontModel)
       .innerJoin(getMappingData, eq(FontModel.id, getMappingData.fontId));

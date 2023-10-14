@@ -1,5 +1,3 @@
-// on-safe-event.decorator.ts
-
 import { applyDecorators, Logger } from '@nestjs/common';
 import { OnEvent, OnEventType } from '@nestjs/event-emitter';
 import { OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';

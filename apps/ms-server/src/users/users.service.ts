@@ -18,6 +18,15 @@ export class UsersService {
     return user[0];
   }
 
+  async findUserByNickName(nickName: string) {
+    const user = await this.db
+      .select()
+      .from(UserModel)
+      .where(eq(UserModel.nickname, nickName))
+      .limit(1);
+    return user[0];
+  }
+
   async createUser(createUserDto: CreateUserDto) {
     const user = await this.db
       .insert(UserModel)
