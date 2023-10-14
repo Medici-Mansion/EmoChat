@@ -128,7 +128,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
             if (key === 'neutral') {
               form.resetField('sentiment')
             }
-            // setSentiments(sentiments)
+            setSentiments(sentiments)
           })
           checkCnt.current = cnt
           emotionRef.current = key
