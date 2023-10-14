@@ -1,3 +1,4 @@
+import { fadeInOutMotion } from '@/motions'
 import { Sentiment } from '@/types'
 import { AnimatePresence, motion } from 'framer-motion'
 import React, { useState } from 'react'
@@ -13,15 +14,7 @@ const SentimentsRadio = ({
   return (
     <AnimatePresence>
       {sentiments.map((sm) => (
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{
-            y: 0,
-            opacity: 1,
-          }}
-          exit={{ y: 50, opacity: 0 }}
-          key={sm.id}
-        >
+        <motion.div {...fadeInOutMotion} key={sm.id}>
           <input
             className="peer hidden"
             name="sentiment"

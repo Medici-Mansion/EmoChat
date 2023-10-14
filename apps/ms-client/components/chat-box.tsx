@@ -1,7 +1,6 @@
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { ReactNode } from 'react'
+import { ReactNode, useCallback } from 'react'
 import { Label } from './ui/label'
 import { Font } from '@/socket'
 
@@ -10,10 +9,26 @@ type ChatBoxProps = {
   content: string
   emotion: string
   sender: string
+  createdAt: Date
   font?: Font
 }
 
-const ChatBox = ({ content, isMe, emotion, font, sender }: ChatBoxProps) => {
+const ChatBox = ({
+  content,
+  isMe,
+  emotion,
+  createdAt,
+  font,
+  sender,
+}: ChatBoxProps) => {
+  const generateTimeString = useCallback(
+    (time: Date) =>
+      new Intl.DateTimeFormat('ko', {
+        timeStyle: 'medium',
+        hour12: true,
+      }).format(time),
+    [],
+  )
   return (
     <motion.div
       className={cn(
@@ -22,8 +37,9 @@ const ChatBox = ({ content, isMe, emotion, font, sender }: ChatBoxProps) => {
       )}
     >
       {/* {isMe ? myIcon : senderIcon} */}
-      <div className={cn('flex flex-col', isMe && 'text-right')}>
+      <div className={cn('flex flex-col m-2 space-y-2', isMe && 'text-right')}>
         <Label>{sender}</Label>
+
         <motion.div
           initial={{
             x: isMe ? 10 : -10,
@@ -39,12 +55,7 @@ const ChatBox = ({ content, isMe, emotion, font, sender }: ChatBoxProps) => {
             type: 'tween',
             duration: 0.1,
           }}
-          className={cn(
-            'rounded-md px-4 py-2 m-2 max-x-sm text-sm relative group',
-            isMe
-              ? 'origin-right bg-card-foreground text-black'
-              : 'origin-left bg-primary/10',
-          )}
+          className="flex space-x-2 items-end"
           style={
             font
               ? {
@@ -53,7 +64,17 @@ const ChatBox = ({ content, isMe, emotion, font, sender }: ChatBoxProps) => {
               : {}
           }
         >
-          {content}
+          <span className="text-xs">{generateTimeString(createdAt)}</span>
+          <div
+            className={cn(
+              'rounded-md px-6 py-4 max-x-sm relative group text-2xl ',
+              isMe
+                ? 'origin-right bg-yellow-200 text-black'
+                : 'origin-left bg-primary/10',
+            )}
+          >
+            {content}
+          </div>
         </motion.div>
       </div>
     </motion.div>

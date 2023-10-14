@@ -22,6 +22,7 @@ export const SocketContext = createContext<{
 }>({
   manager: new Manager(process.env.NEXT_PUBLIC_SITE_URL, {
     transports: ['websocket'],
+    autoConnect: false,
   }),
   info: null,
   setInfo: null,

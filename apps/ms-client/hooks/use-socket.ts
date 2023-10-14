@@ -26,10 +26,13 @@ const useSocket = ({
   }
 
   const [isError, setIsError] = useState<string | null>(null)
-  const socket = useRef(manager.create_socket(nsp)).current
+  const socket = useRef<Socket>(manager.create_socket(nsp)).current
 
   useEffect(() => {
-    if (socket) {
+    if (socket && typeof window !== 'undefined') {
+      if (!socket.connected) {
+        socket.connect()
+      }
       socket.listen('connect_error', ({ message }: Error) => {
         if (!isError) {
           setIsError(message)
@@ -50,13 +53,13 @@ const useSocket = ({
     }
   }, [isError, onConnect, onRoomChanged, socket])
   useEffect(() => {
-    if (socket) {
+    if (socket.connected) {
       onMounted && onMounted(socket)
     }
     return () => {
       onUnmounted && onUnmounted(socket)
     }
-  }, [socket])
+  }, [socket.connected])
   return {
     manager,
     socket: socket,

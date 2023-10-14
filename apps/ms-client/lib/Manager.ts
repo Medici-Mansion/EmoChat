@@ -11,6 +11,7 @@ export class Manager extends M {
     }
     const socket = this.socket(nsp, opts) as Socket
 
+    socket.disconnect()
     socket.listen = function bindEventListnerOnSocket(ev, lisnter) {
       if (this.hasListeners(ev)) {
         socket.off(ev)

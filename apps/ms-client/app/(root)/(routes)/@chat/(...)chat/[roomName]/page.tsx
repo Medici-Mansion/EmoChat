@@ -9,6 +9,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { ReservedMessage } from '@/socket'
 import { Sentiment } from '@/types'
 import SentimentsRadio from '@/components/sentiments-radio'
+import Header from '@/components/header'
 
 const INTERVAL_TIME = 500
 
@@ -17,8 +18,12 @@ interface RoomFormValue {
   sentiment?: Sentiment['id']
 }
 
+interface Message extends ReservedMessage {
+  createdAt: Date
+}
+
 const RoomPage = ({ params: { roomName } }: any) => {
-  const [messages, setMessage] = useState<ReservedMessage[]>([])
+  const [messages, setMessage] = useState<Message[]>([])
   const [sentiments, setSentiments] = useState<Sentiment[]>([])
   const [isEdit, setIsEdit] = useState(false)
 
@@ -34,13 +39,23 @@ const RoomPage = ({ params: { roomName } }: any) => {
     nsp: '/',
     onMounted(socket) {
       socket.emit('JOIN_ROOM', roomName)
-      socket.listen('WELCOME', (message) => {
-        console.log('WELCOME', message)
+      socket.listen('WELCOME', ({ id, nickname, roomName }) => {
+        setMessage((prev) => [
+          ...prev,
+          {
+            createdAt: new Date(),
+            id,
+            message: {
+              emotion: 'neutral',
+              message: `${nickname} 님이 입장하였습니다.`,
+            },
+            nickname,
+          },
+        ])
       })
 
       socket.listen('RESERVE_MESSAGE', (sender) => {
-        console.log(sender, '<<sender')
-        setMessage((prev) => [...prev, sender])
+        setMessage((prev) => [...prev, { ...sender, createdAt: new Date() }])
         requestIdleCallback(() => {
           if (chatScroller?.current) {
             const messageBoxHeight =
@@ -109,13 +124,11 @@ const RoomPage = ({ params: { roomName } }: any) => {
           (emotionRef.current !== key && cnt < 10 && key !== 'neutral') ||
           (emotionRef.current !== key && cnt - checkCnt.current > 6)
         ) {
-          console.log(emotionRef.current, '<emotionRef.current')
-          console.log(key, '<key')
           socket.emit('GET_SENTIMENTS', key, (sentiments: Sentiment[]) => {
             if (key === 'neutral') {
               form.resetField('sentiment')
             }
-            setSentiments(sentiments)
+            // setSentiments(sentiments)
           })
           checkCnt.current = cnt
           emotionRef.current = key
@@ -166,78 +179,83 @@ const RoomPage = ({ params: { roomName } }: any) => {
   }, [startStream, stopStream])
 
   return (
-    <article className="flex divide-x-2">
-      <div
-        ref={chatScroller}
-        className="relative grow h-screen overflow-y-scroll"
-      >
-        <div className="min-h-[calc(100vh-52px)] mt-4">
-          {messages.map(({ id, message, nickname, font }, index) => (
-            <ChatBox
-              sender={nickname}
-              font={font}
-              content={message.message}
-              emotion={message.emotion}
-              isMe={id === socket.id}
-              key={id + index}
-            />
-          ))}
-        </div>
-
-        <form
-          className="sticky bottom-0 p-2 px-4 bg-background"
-          onSubmit={form.handleSubmit(onSubmit)}
+    <>
+      <article className="h-[calc(100dvh-48px)] flex divide-x-2">
+        <div
+          ref={chatScroller}
+          className="relative grow h-screen overflow-y-scroll"
         >
-          <Controller
-            control={form.control}
-            name="sentiment"
-            render={({ field }) => (
-              <div className="flex justify-around py-2">
-                <SentimentsRadio
-                  sentiments={sentiments}
-                  onValueChange={(sentiment) => {
-                    field.onChange(sentiment.id)
-                  }}
+          <div className="min-h-[calc(100%-52px-48px)] mt-4 pb-[52px]">
+            {messages.map(
+              ({ id, message, nickname, createdAt, font }, index) => (
+                <ChatBox
+                  sender={nickname}
+                  font={font}
+                  content={message.message}
+                  createdAt={createdAt}
+                  emotion={message.emotion}
+                  isMe={id === socket.id}
+                  key={id + index}
                 />
-              </div>
+              ),
             )}
-          />
-          <div className="relative">
-            <Input
-              onFocus={() => {
-                setIsEdit(true)
-                console.log(form.getValues())
-              }}
-              className="pr-10"
-              {...form.register('message', {
-                onChange(event) {
-                  if (event.target.value.length <= 0) {
-                    isEdit && setIsEdit(false)
-                  } else {
-                    !isEdit && setIsEdit(true)
-                  }
-                },
-                onBlur() {
-                  if (form.getValues().message.length <= 0) {
-                    setIsEdit(false)
-                  }
-                },
-                required: 'Message is required.',
-              })}
-            />
-            <button
-              className="absolute right-2 -top-1/2 translate-y-full hover:cursor-pointer"
-              type="submit"
-            >
-              <Send />
-            </button>
           </div>
-        </form>
-      </div>
-      <aside className="px-4">
-        <video autoPlay muted playsInline ref={videoRef}></video>
-      </aside>
-    </article>
+
+          <form
+            className="sticky bottom-[48px]"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
+            <Controller
+              control={form.control}
+              name="sentiment"
+              render={({ field }) => (
+                <div className="flex justify-around py-2">
+                  <SentimentsRadio
+                    sentiments={sentiments}
+                    onValueChange={(sentiment) => {
+                      field.onChange(sentiment.id)
+                    }}
+                  />
+                </div>
+              )}
+            />
+            <div className="relative  p-2 px-4 bg-background">
+              <Input
+                autoComplete="off"
+                onFocus={() => {
+                  setIsEdit(true)
+                }}
+                className="pr-10"
+                {...form.register('message', {
+                  onChange(event) {
+                    if (event.target.value.length <= 0) {
+                      isEdit && setIsEdit(false)
+                    } else {
+                      !isEdit && setIsEdit(true)
+                    }
+                  },
+                  onBlur() {
+                    if (form.getValues().message.length <= 0) {
+                      setIsEdit(false)
+                    }
+                  },
+                  required: 'Message is required.',
+                })}
+              />
+              <button
+                className="absolute right-6 top-1/2 -translate-y-1/2 hover:cursor-pointer"
+                type="submit"
+              >
+                <Send />
+              </button>
+            </div>
+          </form>
+        </div>
+        <aside className="px-4">
+          <video autoPlay muted playsInline ref={videoRef}></video>
+        </aside>
+      </article>
+    </>
   )
 }
 

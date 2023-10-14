@@ -1,14 +1,11 @@
-import Header from '@/components/header'
-import { Input } from '@/components/ui/input'
-import Link from 'next/link'
+import Image from 'next/image'
+
 import React from 'react'
 
 const ChatPage = () => {
   return (
-    <div>
-      <Header />
-      CHAT
-      <Link href="/chat/e12321">GO</Link>
+    <div className="relative h-full">
+      <Image src="/images/empty.png" alt="empty" fill />
     </div>
   )
 }

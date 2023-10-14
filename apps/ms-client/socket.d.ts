@@ -25,7 +25,11 @@ export interface ReservedMessage {
 
 interface ServerToClientEvents {
   ROOM_CHANGE: (rooms: Room[]) => void
-  WELCOME: (message: string) => void
+  WELCOME: (userInfo: {
+    id: string
+    nickname: string
+    roomName: string
+  }) => void
   RESERVE_MESSAGE: (sender: ReservedMessage) => void
 }
 

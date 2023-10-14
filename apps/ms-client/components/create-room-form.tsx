@@ -1,5 +1,4 @@
-import React from 'react'
-import Popup from '@/components/ui/popup'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,6 +12,13 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { MessageSquarePlus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const CreateRoomFormSchema = z.object({
   roomName: z
@@ -20,11 +26,9 @@ const CreateRoomFormSchema = z.object({
     .min(1, 'room name is required.'),
 })
 
-interface CreateRoomFormProps {
-  onSubmit: (roomInfo: z.infer<typeof CreateRoomFormSchema>) => void
-}
-
-const CreateRoomForm = ({ onSubmit }: CreateRoomFormProps) => {
+const CreateRoomForm = () => {
+  const [open, setOpen] = useState(false)
+  const router = useRouter()
   const form = useForm<z.infer<typeof CreateRoomFormSchema>>({
     resolver: zodResolver(CreateRoomFormSchema),
     defaultValues: {
@@ -32,20 +36,32 @@ const CreateRoomForm = ({ onSubmit }: CreateRoomFormProps) => {
     },
   })
 
+  const onJoinRoom = ({ roomName }: { roomName: string }) => {
+    router.push(`/chat/${roomName}`)
+    setOpen(false)
+  }
+
   return (
-    <Popup
-      label="Create Chat Room"
-      content={
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="secondary" size="icon" className="shadow-none">
+          <MessageSquarePlus />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            className="flex flex-col space-y-2"
+            onSubmit={form.handleSubmit(onJoinRoom)}
+          >
             <FormField
               control={form.control}
               name="roomName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>roomName</FormLabel>
+                  <FormLabel>Create Chat Room</FormLabel>
                   <Input className="col-span-3" {...field} />
-                  <FormDescription>??</FormDescription>
+                  <FormDescription>Create Your Chat Room</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -53,8 +69,8 @@ const CreateRoomForm = ({ onSubmit }: CreateRoomFormProps) => {
             <Button type="submit">Submit</Button>
           </form>
         </Form>
-      }
-    />
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
