@@ -21,14 +21,16 @@ const ChatBox = ({
   font,
   sender,
 }: ChatBoxProps) => {
-  const generateTimeString = useCallback(
-    (time: Date) =>
-      new Intl.DateTimeFormat('ko', {
-        timeStyle: 'medium',
-        hour12: true,
-      }).format(time),
-    [],
-  )
+  const generateTimeString = useCallback((time: Date) => {
+    const timeForm = new Intl.DateTimeFormat('ko', {
+      timeStyle: 'medium',
+      hour12: true,
+    })
+      .format(time)
+      .split(':')
+    timeForm.pop()
+    return timeForm.join(':')
+  }, [])
   return (
     <motion.div
       className={cn(
