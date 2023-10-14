@@ -59,13 +59,6 @@ const ChatBox = ({
             'flex items-end',
             !isMe ? 'flex-row-reverse' : 'space-x-2',
           )}
-          style={
-            font
-              ? {
-                  fontFamily: `var(--font-${font.code})`,
-                }
-              : {}
-          }
         >
           <span className={cn('text-xs', !isMe && 'ml-2')}>
             {generateTimeString(createdAt)}
@@ -77,6 +70,13 @@ const ChatBox = ({
                 ? 'origin-right bg-yellow-200 text-black'
                 : 'origin-left bg-primary/10',
             )}
+            style={
+              font
+                ? {
+                    fontFamily: `var(--font-${font.code})`,
+                  }
+                : {}
+            }
           >
             {content}
           </div>
