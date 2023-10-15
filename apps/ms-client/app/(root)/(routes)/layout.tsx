@@ -1,17 +1,14 @@
 import Header from '@/components/header'
 import { PropsWithChildren, ReactNode } from 'react'
 
-interface ParallelRoutes {
-  chat: ReactNode
-}
+interface ParallelRoutes {}
 
-const RootLayout = ({ children, chat }: PropsWithChildren<ParallelRoutes>) => {
+const RootLayout = ({ children }: PropsWithChildren<ParallelRoutes>) => {
   return (
     <div className="h-[100dvh] sm:h-screen">
       <Header />
       <main className="flex divide-x-2 h-full">
-        <section className="hidden sm:block flex-[1]">{children}</section>
-        {chat && <section className="flex-[4]">{chat}</section>}
+        <section className="flex-[1]">{children}</section>
       </main>
     </div>
   )

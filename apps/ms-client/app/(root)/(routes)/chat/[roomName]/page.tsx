@@ -3,14 +3,15 @@ import * as faceapi from 'face-api.js'
 import ChatBox from '@/components/chat-box'
 import { Input } from '@/components/ui/input'
 import useSocket from '@/hooks/use-socket'
-import { Send } from 'lucide-react'
+import { Send, Users } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ReservedMessage } from '@/socket'
 import { Sentiment } from '@/types'
 import SentimentsRadio from '@/components/sentiments-radio'
-import Header from '@/components/header'
-
+import RoomCard from '@/components/room-card'
+import { AnimatePresence, motion } from 'framer-motion'
+import { fadeInOutMotion, fadeInOutReverseMotion } from '@/motions'
 const INTERVAL_TIME = 500
 
 interface RoomFormValue {
@@ -38,6 +39,8 @@ const RoomPage = ({ params: { roomName } }: any) => {
   }>({
     emotion: 'neutral',
   })
+
+  const [users, setUsers] = useState<string[]>([])
   const checkCnt = useRef<number>(0)
 
   const { socket } = useSocket({
@@ -71,6 +74,9 @@ const RoomPage = ({ params: { roomName } }: any) => {
     },
     onUnmounted(socket) {
       socket.emit('EXIT_ROOM')
+    },
+    onRoomChanged(rooms) {
+      setUsers(rooms.find((room) => room.name === roomName)?.users || [])
     },
   })
 
@@ -134,7 +140,6 @@ const RoomPage = ({ params: { roomName } }: any) => {
             setSentiments(sentiments)
           })
           checkCnt.current = cnt
-          console.log(expres, '<<expres')
           emotionRef.current = {
             emotion: key,
             others: expres,
@@ -189,6 +194,23 @@ const RoomPage = ({ params: { roomName } }: any) => {
   return (
     <>
       <article className="h-[calc(100dvh-48px)] flex divide-x-2">
+        <div className="p-3 py-4">
+          <RoomCard roomName={roomName} />
+          <div className="flex flex-col space-y-2 mt-2">
+            <AnimatePresence>
+              {users.map((user, index) => (
+                <motion.div
+                  {...fadeInOutMotion}
+                  key={user + index}
+                  className="flex items-center space-x-2"
+                >
+                  <Users />
+                  <p>{user}</p>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
         <div
           ref={chatScroller}
           className="relative grow h-screen overflow-y-scroll"

@@ -16,7 +16,7 @@ export const fadeInOutMotion: Variants = {
 }
 export const fadeInOutReverseMotion: Variants = {
   initial: {
-    y: 50,
+    y: -50,
     opacity: 0,
   },
   animate: {
@@ -24,7 +24,7 @@ export const fadeInOutReverseMotion: Variants = {
     opacity: 1,
   },
   exit: {
-    y: 50,
+    y: -50,
     opacity: 0,
   },
 }

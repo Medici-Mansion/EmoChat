@@ -3,6 +3,7 @@ import type { Socket as S } from 'socket.io-client'
 interface Room {
   name: string
   count: number
+  users: string[]
 }
 
 interface Font {

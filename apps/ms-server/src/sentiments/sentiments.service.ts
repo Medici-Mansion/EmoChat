@@ -6,7 +6,7 @@ import { FontModel } from '@/db/models/font.model';
 import { SentimentModel } from '@/db/models/sentiment.model';
 
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, isNull } from 'drizzle-orm';
 
 @Injectable()
 export class SentimentsService {
@@ -48,6 +48,31 @@ export class SentimentsService {
       })
       .from(FontModel)
       .innerJoin(getMappingData, eq(FontModel.id, getMappingData.fontId));
+    return result;
+  }
+
+  async getDefaultFontByEmotion(emotion: string) {
+    const getMappingData = this.db
+      .select({
+        id: FontMappingModel.id,
+        fontId: FontMappingModel.fontId,
+        title: EmotionModel.title,
+      })
+      .from(FontMappingModel)
+      .innerJoin(EmotionModel, eq(EmotionModel.id, FontMappingModel.emotionId))
+      .where(isNull(FontMappingModel.sentimentId))
+      .as('P');
+    const result = await this.db
+      .select({
+        id: FontModel.id,
+        code: FontModel.code,
+        alias: FontModel.alias,
+        name: FontModel.name,
+        mappingId: getMappingData.id,
+      })
+      .from(FontModel)
+      .innerJoin(getMappingData, eq(FontModel.id, getMappingData.fontId))
+      .where(eq(getMappingData.title, emotion));
     return result;
   }
 }

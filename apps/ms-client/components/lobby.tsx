@@ -4,52 +4,49 @@ import useSocket from '@/hooks/use-socket'
 import { cn } from '@/lib/utils'
 import { Room } from '@/socket'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { fadeInOutReverseMotion } from '@/motions'
-import { User } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
+import RoomCard from './room-card'
+import Link from 'next/link'
 
-const MotionButton = motion(Button)
 const LobbyScreen = () => {
-  const path = usePathname()
-  const title =
-    path.split('/').filter((item) => item !== 'chat' && !!item)[0] || 'Lobby'
-  const [rooms, setRooms] = useState<Room[]>([])
-
-  const router = useRouter()
-
   useSocket({
     nsp: '/',
-    onRoomChanged(rooms) {
-      setRooms(rooms)
-    },
   })
 
-  const onJoinRoom = (roomName: string) => {
-    router.push(`/chat/${roomName}`)
-  }
+  const colors = useMemo(
+    () => [
+      '#EF8482',
+      '#FFD762',
+      '#EC609C',
+      '#FFA31D',
+      '#00F0A5',
+      '#F5C3AF',
+      '#EA89D7',
+      '#64A2FF',
+      '#913DF3',
+      '#564CFF',
+    ],
+    [],
+  )
+  const RoomNames = useMemo(
+    () =>
+      colors.map((color, index) => {
+        return { code: index + 65, color }
+      }),
+    [colors],
+  )
+
   return (
-    <div className={cn('flex flex-col')}>
-      <AnimatePresence mode="wait">
-        {rooms.map((room) => (
-          <MotionButton
-            variant="secondary"
-            className={cn(
-              'rounded-none bg-primary/20 shadow-none flex flex-col py-2 items-start h-full',
-              encodeURIComponent(title) === room.name && 'bg-secondary',
-            )}
-            key={room.name}
-            {...fadeInOutReverseMotion}
-            onClick={() => onJoinRoom(room.name)}
-          >
-            <p className="text-2xl">{room.name}</p>
-            <p className="flex items-center space-x-2">
-              <User />
-              <span> {room.count}</span>
-            </p>
-          </MotionButton>
-        ))}
-      </AnimatePresence>
+    <div className={cn('flex flex-col sm:grid sm:grid-cols-2 gap-y-6 gap-x-8')}>
+      {RoomNames.map(({ code, color }, index) => (
+        <Link
+          href={`/chat/${String.fromCharCode(code)}`}
+          key={code + '' + index}
+        >
+          <RoomCard roomName={String.fromCharCode(code)} />
+        </Link>
+      ))}
     </div>
   )
 }

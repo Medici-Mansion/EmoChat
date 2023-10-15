@@ -59,10 +59,21 @@
     --font-37: 'Single Day';
     --font-43: 'WindyLavender';
     --font-49: 'Jeonju_gakR';
+
+    --color-A: #ef8482;
+    --color-B: #ffd762;
+    --color-C: #ec609c;
+    --color-D: #ffa31d;
+    --color-E: #00f0a5;
+    --color-F: #f5c3af;
+    --color-G: #ea89d7;
+    --color-H: #64a2ff;
+    --color-I: #913df3;
+    --color-J: #564cff;
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
+    --background: #000000;
     --foreground: 60 9.1% 97.8%;
 
     --card: 20 14.3% 4.1%;
@@ -74,7 +85,7 @@
     --primary: 60 9.1% 97.8%;
     --primary-foreground: 24 9.8% 10%;
 
-    --secondary: 12 6.5% 15.1%;
+    --secondary: #333333;
     --secondary-foreground: 60 9.1% 97.8%;
 
     --muted: 12 6.5% 15.1%;
