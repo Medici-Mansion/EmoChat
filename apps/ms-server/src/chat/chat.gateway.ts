@@ -72,7 +72,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       emotionTitle: message.emotion,
       mappingId: font?.mappingId,
       nickName: client.data.nickname,
-      room: encodeURIComponent(roomName),
+      room: decodeURIComponent(roomName),
       text: message.message,
     };
 
