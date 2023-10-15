@@ -56,24 +56,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('SEND_MESSAGE')
   async handleSendMEssage(
     @ConnectedSocket() client: Socket,
-    @MessageBody() message: SendMessageDto,
+    @MessageBody() body: SendMessageDto,
   ) {
     const {
       data: { roomName, nickname },
     } = client;
-
+    const { emotion, others, message, sentiment } = body;
     const currentFont =
-      await this.sentimentsService.getFontByEmotionAndSentiment(
-        message.sentiment,
-      );
+      await this.sentimentsService.getFontByEmotionAndSentiment(sentiment);
 
     const font = currentFont?.[0];
     const messageCreatedDto: CreateMessageDto = {
-      emotionTitle: message.emotion,
+      emotionTitle: emotion,
       mappingId: font?.mappingId,
       nickName: client.data.nickname,
       room: decodeURIComponent(roomName),
-      text: message.message,
+      text: message,
+      others,
     };
 
     this.eventEmitter.emit('message.created', messageCreatedDto);

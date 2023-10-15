@@ -1,4 +1,4 @@
-import { pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { doublePrecision, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { CoreModel } from './core.model';
 import { relations } from 'drizzle-orm';
 import { FontMappingModel } from './font-mapping.model';
@@ -10,6 +10,14 @@ export const MessageModel = pgTable('message', {
   emotion: text('emotion'),
   nickname: text('nickname'),
   room: text('room'),
+  neutral: doublePrecision('neutral'),
+  happy: doublePrecision('happy'),
+  sad: doublePrecision('sad'),
+  angry: doublePrecision('angry'),
+  fearful: doublePrecision('fearful'),
+  disgusted: doublePrecision('disgusted'),
+  surprised: doublePrecision('surprised'),
+
   userId: uuid('userId').references(() => UserModel.id),
   fontToEmotionId: uuid('fontToEmotionId').references(
     () => FontMappingModel.id,

@@ -13,7 +13,7 @@ export class StatisticsListener {
 
   @OnSafeEvent('message.created')
   async handleMessageCreatedEvent(event: CreateMessageDto) {
-    const { nickName, emotionTitle, mappingId, room, text } = event;
+    const { nickName, emotionTitle, mappingId, room, text, others } = event;
     const user = await this.usersService.findUserByNickName(nickName);
 
     this.messagesService.createMessage({
@@ -23,6 +23,7 @@ export class StatisticsListener {
       nickname: nickName,
       emotion: emotionTitle,
       fontToEmotionId: mappingId,
+      ...others,
     });
   }
 }

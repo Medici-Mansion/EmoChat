@@ -7,20 +7,12 @@ import { Font } from '@/socket'
 type ChatBoxProps = {
   isMe: boolean
   content: string
-  emotion: string
   sender: string
   createdAt: Date
   font?: Font
 }
 
-const ChatBox = ({
-  content,
-  isMe,
-  emotion,
-  createdAt,
-  font,
-  sender,
-}: ChatBoxProps) => {
+const ChatBox = ({ content, isMe, createdAt, font, sender }: ChatBoxProps) => {
   const generateTimeString = useCallback((time: Date) => {
     const timeForm = new Intl.DateTimeFormat('ko', {
       timeStyle: 'medium',
@@ -31,6 +23,7 @@ const ChatBox = ({
     timeForm.pop()
     return timeForm.join(':')
   }, [])
+
   return (
     <motion.div
       className={cn(

@@ -32,7 +32,12 @@ const RoomPage = ({ params: { roomName } }: any) => {
   const chatScroller = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream>()
-  const emotionRef = useRef<string>('neutral')
+  const emotionRef = useRef<{
+    emotion: string
+    others?: faceapi.FaceExpressions
+  }>({
+    emotion: 'neutral',
+  })
   const checkCnt = useRef<number>(0)
 
   const { socket } = useSocket({
@@ -45,10 +50,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
           {
             createdAt: new Date(),
             id,
-            message: {
-              emotion: 'neutral',
-              message: `${nickname} 님이 입장하였습니다.`,
-            },
+            message: `${nickname} 님이 입장하였습니다.`,
             nickname,
           },
         ])
@@ -110,19 +112,20 @@ const RoomPage = ({ params: { roomName } }: any) => {
         .withFaceExpressions()
 
       if (dect?.expressions) {
-        const expres = dect.expressions as any
+        const expres = dect.expressions
         let maxV = 0
         let key = ''
-        Object.keys(expres).forEach((k) => {
-          const v = expres[k]
-          if (v > maxV) {
-            maxV = v
-            key = k
+        Object.entries(expres).map((item) => {
+          if (item[1] > maxV) {
+            maxV = item[1]
+            key = item[0]
           }
         })
+
+        const { emotion } = emotionRef.current
         if (
-          (emotionRef.current !== key && cnt < 10 && key !== 'neutral') ||
-          (emotionRef.current !== key && cnt - checkCnt.current > 6)
+          (emotion !== key && cnt < 10 && key !== 'neutral') ||
+          (emotion !== key && cnt - checkCnt.current > 6)
         ) {
           socket.emit('GET_SENTIMENTS', key, (sentiments: Sentiment[]) => {
             if (key === 'neutral') {
@@ -131,7 +134,11 @@ const RoomPage = ({ params: { roomName } }: any) => {
             setSentiments(sentiments)
           })
           checkCnt.current = cnt
-          emotionRef.current = key
+          console.log(expres, '<<expres')
+          emotionRef.current = {
+            emotion: key,
+            others: expres,
+          }
         }
       }
     },
@@ -140,11 +147,12 @@ const RoomPage = ({ params: { roomName } }: any) => {
 
   const onSubmit = useCallback(
     async ({ message, sentiment }: RoomFormValue) => {
-      const emotion = emotionRef.current || 'neutral'
+      const { emotion = 'neutral', others } = emotionRef.current
       socket.emit('SEND_MESSAGE', {
         message,
         emotion,
         sentiment: sentiment,
+        others,
       })
       form.resetField('message')
     },
@@ -191,9 +199,8 @@ const RoomPage = ({ params: { roomName } }: any) => {
                 <ChatBox
                   sender={nickname}
                   font={font}
-                  content={message.message}
+                  content={message}
                   createdAt={createdAt}
-                  emotion={message.emotion}
                   isMe={id === socket.id}
                   key={id + index}
                 />

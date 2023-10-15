@@ -18,7 +18,7 @@ interface Message {
 
 export interface ReservedMessage {
   id: string
-  message: Message
+  message: string
   nickname: string
   font?: Font
 }
