@@ -111,14 +111,15 @@ const RoomPage = ({ params: { roomName } }: any) => {
   const getEmotion = useCallback(
     async (cnt: number) => {
       const dect = await faceapi
-        .detectSingleFace(
+        .detectAllFaces(
           videoRef.current!,
           new faceapi.TinyFaceDetectorOptions(),
         )
+        .withFaceLandmarks()
         .withFaceExpressions()
 
-      if (dect?.expressions) {
-        const expres = dect.expressions
+      if (dect?.[0]?.expressions) {
+        const expres = dect?.[0]?.expressions
         let maxV = 0
         let key = ''
         Object.entries(expres).map((item) => {
@@ -197,7 +198,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
         <div className="p-3 py-4">
           <RoomCard roomName={roomName} />
           <div className="flex flex-col space-y-2 mt-2">
-            <AnimatePresence>
+            <AnimatePresence mode="popLayout">
               {users.map((user, index) => (
                 <motion.div
                   {...fadeInOutMotion}
