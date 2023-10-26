@@ -11,7 +11,7 @@ import { Sentiment } from '@/types'
 import SentimentsRadio from '@/components/sentiments-radio'
 import RoomCard from '@/components/room-card'
 import { AnimatePresence, motion } from 'framer-motion'
-import { fadeInOutMotion, fadeInOutReverseMotion } from '@/motions'
+import { fadeInOutMotion } from '@/motions'
 const INTERVAL_TIME = 500
 
 interface RoomFormValue {
@@ -225,7 +225,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
                   content={message}
                   createdAt={createdAt}
                   isMe={id === socket.id}
-                  key={id + index}
+                  key={id + index + createdAt}
                 />
               ),
             )}

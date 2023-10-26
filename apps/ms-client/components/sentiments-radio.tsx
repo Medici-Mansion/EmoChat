@@ -1,7 +1,6 @@
 import { fadeInOutMotion } from '@/motions'
 import { Sentiment } from '@/types'
 import { AnimatePresence, motion } from 'framer-motion'
-import React, { useState } from 'react'
 
 interface SentimentsRadioProps {
   sentiments: Sentiment[]
@@ -12,26 +11,22 @@ const SentimentsRadio = ({
   onValueChange,
 }: SentimentsRadioProps) => {
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="popLayout">
       {sentiments.map((sm) => (
         <motion.div {...fadeInOutMotion} key={sm.id}>
           <input
-            className="peer hidden"
+            className="peer hidden "
             name="sentiment"
             type="radio"
             value={sm.id}
             id={sm.id}
-            onChange={(event) => {
-              const {
-                target: { value: selectedValue },
-              } = event
-
+            onChange={() => {
               onValueChange && onValueChange(sm)
             }}
           />
           <label
             htmlFor={sm.id}
-            className="px-4 py-2 rounded-md border-2 border-muted-foreground peer-checked:text-blue-300 peer-checked:border-blue-300 duration-300"
+            className="px-4 py-2 rounded-md border-2 border-muted-foreground peer-checked:text-blue-300 peer-checked:border-blue-300 duration-300 whitespace-nowrap"
           >
             {sm.name}
           </label>
