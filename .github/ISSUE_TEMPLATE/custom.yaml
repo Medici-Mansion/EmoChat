@@ -1,7 +1,7 @@
-name: 💡 수정요청
-title: '[SERVER] '
+name: 🎨[CLIENT] 수정요청
+title: '[CLIENT] '
 description: 새로운 기능은 제안하거나, 수정이 필요한 부분을 알려주세요.
-labels: ['💡 수정요청']
+labels: ['💡 수정요청','🎨 [CLIENT]']
 
 body:
   - type: textarea
@@ -13,7 +13,7 @@ body:
     validations:
       required: true
 
-       
+     
   - type: textarea
     id: info
     attributes:
