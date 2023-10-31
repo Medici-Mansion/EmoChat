@@ -1,0 +1,23 @@
+name: 💡 수정요청
+title: '[CLIENT] '
+description: 새로운 기능은 제안하거나, 수정이 필요한 부분을 알려주세요.
+labels: ['💡 수정요청']
+
+body:
+  - type: textarea
+    id: feature
+    attributes:
+      label: "수정 요청"
+      description: 요청하시는 기능에 대해 설명해주세요.
+      placeholder: "여기에 자신이 요청하는 기능에 대한 설명을 작성해주세요."
+    validations:
+      required: true
+
+     
+  - type: textarea
+    id: info
+    attributes:
+      label: "플랫폼과 버전"
+      description: 사용하시는 OS와 버전을 알려주세요.
+    validations:
+      required: true
