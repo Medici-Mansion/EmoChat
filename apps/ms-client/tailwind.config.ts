@@ -22,10 +22,21 @@ module.exports = {
         ring: 'hsl(var(--ring))',
         background: 'var(--background)',
         foreground: 'hsl(var(--foreground))',
+        chatground: 'var(--chatground)',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
           background: 'hsl(var(--primary-background))',
+        },
+        chatbox: {
+          me: {
+            box: 'var(--chatbox-me-box)',
+            text: 'var(--chatbox-me-text)',
+          },
+          others: {
+            box: 'var(--chatbox-others-box)',
+            text: 'var(--chatbox-others-text)',
+          },
         },
         secondary: {
           DEFAULT: 'var(--secondary)',

@@ -8,6 +8,14 @@
     --background: 0 0% 100%;
     --foreground: 20 14.3% 4.1%;
 
+    --chatground: #eff0f2;
+
+    --chatbox-me-box: #1b72c0;
+    --chatbox-me-text: #ffffff;
+
+    --chatbox-others-box: #ffffff;
+    --chatbox-others-text: #0e181e;
+
     --card: 0 0% 100%;
     --card-foreground: 20 14.3% 4.1%;
 
@@ -75,6 +83,14 @@
   .dark {
     --background: #000000;
     --foreground: 60 9.1% 97.8%;
+
+    --chatground: #0e181e;
+
+    --chatbox-me-box: #9cd0ff;
+    --chatbox-me-text: #0e181e;
+
+    --chatbox-others-box: #1e2a32;
+    --chatbox-others-text: #eff0f2;
 
     --card: 20 14.3% 4.1%;
     --card-foreground: 60 9.1% 97.8%;

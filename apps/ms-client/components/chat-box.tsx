@@ -62,8 +62,8 @@ const ChatBox = ({ content, isMe, createdAt, font, sender }: ChatBoxProps) => {
             className={cn(
               'rounded-md px-6 py-4 max-x-sm relative group text-2xl ',
               isMe
-                ? 'origin-right bg-yellow-200 text-black'
-                : 'origin-left bg-primary/10',
+                ? 'origin-right bg-chatbox-me-box text-chatbox-me-text'
+                : 'origin-left bg-chatbox-others-box text-chatbox-others-text',
             )}
             style={
               font

@@ -26,7 +26,7 @@ const SentimentsRadio = ({
           />
           <label
             htmlFor={sm.id}
-            className="px-4 py-2 rounded-md border-2 border-muted-foreground peer-checked:text-blue-300 peer-checked:border-blue-300 duration-300 whitespace-nowrap"
+            className="px-4 py-2 rounded-md border-2 border-muted-foreground bg-chatbox-others-box peer-checked:text-chatbox-me-box peer-checked:border-chatbox-me-box duration-300 whitespace-nowrap"
           >
             {sm.name}
           </label>

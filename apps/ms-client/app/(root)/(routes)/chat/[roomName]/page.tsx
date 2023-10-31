@@ -214,7 +214,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
         </div>
         <div
           ref={chatScroller}
-          className="relative grow h-screen overflow-y-scroll"
+          className="relative grow h-screen overflow-y-scroll bg-chatground"
         >
           <div className="min-h-[calc(100%-52px-48px)] mt-4 pb-[52px]">
             {messages.map(
@@ -249,13 +249,13 @@ const RoomPage = ({ params: { roomName } }: any) => {
                 </div>
               )}
             />
-            <div className="relative  p-2 px-4 bg-background">
+            <div className="relative  p-2 px-4 bg-transparent">
               <Input
                 autoComplete="off"
                 onFocus={() => {
                   setIsEdit(true)
                 }}
-                className="pr-10"
+                className="pr-10 bg-chatbox-others-box"
                 {...form.register('message', {
                   onChange(event) {
                     if (event.target.value.length <= 0) {
