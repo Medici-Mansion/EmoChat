@@ -17,7 +17,7 @@ body:
   - type: textarea
     id: info
     attributes:
-      label: "플랫폼과 버전"
-      description: 사용하시는 OS와 버전을 알려주세요.
+      label: "추가 제안"
+      description: 요청사항 이외의 전달하고 싶은 내용을 작성해 주세요.
     validations:
-      required: true
+      required: false
