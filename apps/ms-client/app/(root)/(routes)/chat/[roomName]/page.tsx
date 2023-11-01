@@ -3,16 +3,14 @@ import * as faceapi from 'face-api.js'
 import ChatBox from '@/components/chat-box'
 import { Input } from '@/components/ui/input'
 import useSocket from '@/hooks/use-socket'
-import { Send, Users } from 'lucide-react'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Send } from 'lucide-react'
+import React, { useCallback, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ReservedMessage } from '@/socket'
 import { Sentiment } from '@/types'
 import SentimentsRadio from '@/components/sentiments-radio'
-import RoomCard from '@/components/room-card'
-import { AnimatePresence, motion } from 'framer-motion'
-import { fadeInOutMotion } from '@/motions'
-const INTERVAL_TIME = 500
+import ChatUser from '@/components/chat-user'
+import FaceDetector from '@/components/face-detector'
 
 interface RoomFormValue {
   message: string
@@ -28,11 +26,8 @@ const RoomPage = ({ params: { roomName } }: any) => {
   const [sentiments, setSentiments] = useState<Sentiment[]>([])
   const [isEdit, setIsEdit] = useState(false)
 
-  const timer = useRef<NodeJS.Timeout>()
   const form = useForm<RoomFormValue>()
   const chatScroller = useRef<HTMLDivElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const streamRef = useRef<MediaStream>()
   const emotionRef = useRef<{
     emotion: string
     others?: faceapi.FaceExpressions
@@ -41,7 +36,6 @@ const RoomPage = ({ params: { roomName } }: any) => {
   })
 
   const [users, setUsers] = useState<string[]>([])
-  const checkCnt = useRef<number>(0)
 
   const { socket } = useSocket({
     nsp: '/',
@@ -80,77 +74,6 @@ const RoomPage = ({ params: { roomName } }: any) => {
     },
   })
 
-  const startStream = useCallback(async () => {
-    if (typeof window === 'undefined') return
-    Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-      faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-      faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-      faceapi.nets.faceExpressionNet.loadFromUri('/models'),
-    ])
-    const stream = await window.navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        aspectRatio: 9 / 12,
-        width: 200,
-        facingMode: 'environment',
-      },
-    })
-    streamRef.current = stream
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream
-    }
-  }, [])
-
-  const stopStream = useCallback(() => {
-    streamRef.current?.getTracks().map((track) => {
-      track.stop()
-    })
-  }, [])
-
-  const getEmotion = useCallback(
-    async (cnt: number) => {
-      const dect = await faceapi
-        .detectAllFaces(
-          videoRef.current!,
-          new faceapi.TinyFaceDetectorOptions(),
-        )
-        .withFaceLandmarks()
-        .withFaceExpressions()
-
-      if (dect?.[0]?.expressions) {
-        const expres = dect?.[0]?.expressions
-        let maxV = 0
-        let key = ''
-        Object.entries(expres).map((item) => {
-          if (item[1] > maxV) {
-            maxV = item[1]
-            key = item[0]
-          }
-        })
-
-        const { emotion } = emotionRef.current
-        if (
-          (emotion !== key && cnt < 10 && key !== 'neutral') ||
-          (emotion !== key && cnt - checkCnt.current > 6)
-        ) {
-          socket.emit('GET_SENTIMENTS', key, (sentiments: Sentiment[]) => {
-            if (key === 'neutral') {
-              form.resetField('sentiment')
-            }
-            setSentiments(sentiments)
-          })
-          checkCnt.current = cnt
-          emotionRef.current = {
-            emotion: key,
-            others: expres,
-          }
-        }
-      }
-    },
-    [form, socket],
-  )
-
   const onSubmit = useCallback(
     async ({ message, sentiment }: RoomFormValue) => {
       const { emotion = 'neutral', others } = emotionRef.current
@@ -165,58 +88,15 @@ const RoomPage = ({ params: { roomName } }: any) => {
     [form, socket],
   )
 
-  const getEmotionBatch = useCallback(() => {
-    let cnt = 0
-    return setInterval(async () => {
-      await getEmotion(cnt)
-      cnt++
-    }, INTERVAL_TIME)
-  }, [getEmotion])
-
-  useEffect(() => {
-    if (!isEdit) {
-      clearInterval(timer.current)
-      timer.current = getEmotionBatch()
-    } else {
-      clearInterval(timer.current)
-    }
-    return () => {
-      clearInterval(timer.current)
-    }
-  }, [getEmotionBatch, isEdit])
-
-  useEffect(() => {
-    startStream()
-    return () => {
-      stopStream()
-    }
-  }, [startStream, stopStream])
-
   return (
     <>
-      <article className="h-[calc(100dvh-48px)] flex divide-x-2">
-        <div className="p-3 py-4">
-          <RoomCard roomName={roomName} />
-          <div className="flex flex-col space-y-2 mt-2">
-            <AnimatePresence mode="popLayout">
-              {users.map((user, index) => (
-                <motion.div
-                  {...fadeInOutMotion}
-                  key={user + index}
-                  className="flex items-center space-x-2"
-                >
-                  <Users />
-                  <p>{user}</p>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
+      <article className="h-[calc(100dvh-48px)] flex  sm:divide-x-2">
+        <ChatUser roomName={roomName} users={users} />
         <div
           ref={chatScroller}
-          className="relative grow h-screen overflow-y-scroll bg-chatground"
+          className="relative grow overflow-y-scroll bg-chatground"
         >
-          <div className="min-h-[calc(100%-52px-48px)] mt-4 pb-[52px]">
+          <div className="min-h-[calc(100%-52px-48px)] mt-4 pb-2">
             {messages.map(
               ({ id, message, nickname, createdAt, font }, index) => (
                 <ChatBox
@@ -232,7 +112,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
           </div>
 
           <form
-            className="sticky bottom-[48px]"
+            className="sticky bottom-3"
             onSubmit={form.handleSubmit(onSubmit)}
           >
             <Controller
@@ -281,9 +161,23 @@ const RoomPage = ({ params: { roomName } }: any) => {
             </div>
           </form>
         </div>
-        <aside className="px-4">
-          <video autoPlay muted playsInline ref={videoRef}></video>
-        </aside>
+        <FaceDetector
+          batchRunning={!isEdit}
+          onEmotionChange={(emotion) => {
+            console.log(emotion)
+            emotionRef.current = emotion
+            socket.emit(
+              'GET_SENTIMENTS',
+              emotionRef.current.emotion,
+              (sentiments: Sentiment[]) => {
+                if (emotionRef.current.emotion === 'neutral') {
+                  form.resetField('sentiment')
+                }
+                setSentiments(sentiments)
+              },
+            )
+          }}
+        />
       </article>
     </>
   )

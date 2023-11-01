@@ -9,6 +9,12 @@ import { cn } from '@/lib/utils'
 export const metadata: Metadata = {
   title: 'MS Messenger',
   description: 'Send messages with your emotion!',
+  viewport: {
+    userScalable: false,
+    initialScale: 1,
+    maximumScale: 1,
+    width: 'device-width',
+  },
 }
 
 export default function RootLayout({
