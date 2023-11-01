@@ -1,10 +1,8 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { QueryProvider } from '@/components/providers/query-provider'
 import SocketProvider from '@/components/providers/socket-provier'
-import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'MS Messenger',
@@ -24,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn('overflow-hidden')}>
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

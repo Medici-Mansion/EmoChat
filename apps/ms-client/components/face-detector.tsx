@@ -1,7 +1,7 @@
 'use client'
 import React, { useCallback, useEffect, useRef } from 'react'
 import * as faceapi from 'face-api.js'
-import { Emotion, Sentiment } from '@/types'
+import { Emotion } from '@/types'
 
 interface FaceDetectorProps {
   intervalTime?: number
@@ -39,7 +39,7 @@ const FaceDetector = ({
       video: {
         aspectRatio: 9 / 12,
         width: 200,
-        facingMode: 'environment',
+        facingMode: 'user',
       },
     })
     streamRef.current = stream
@@ -63,7 +63,6 @@ const FaceDetector = ({
         )
         .withFaceLandmarks()
         .withFaceExpressions()
-      console.log(dect)
       if (dect?.[0]?.expressions) {
         const expres = dect?.[0]?.expressions
         let maxV = 0
