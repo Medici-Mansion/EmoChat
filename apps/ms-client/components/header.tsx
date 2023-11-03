@@ -15,7 +15,8 @@ const Header = () => {
         <div className="w-6 h-6 relative">
           <Image src="/images/logo.png" alt="logo" fill />
         </div>
-        <span className="text-ellipsis whitespace-nowrap">
+        <span className="sm:hidden">EmoChat</span>
+        <span className="hidden sm:inline text-ellipsis whitespace-nowrap">
           Emotion Detection Messenger
         </span>
       </div>
