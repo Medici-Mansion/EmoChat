@@ -21,9 +21,9 @@ export default function RootLayout({
       <body className={cn('overflow-hidden')}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem={false}
-          storageKey="discord-theme"
+          storageKey="emochat-theme"
         >
           <SocketProvider>
             <QueryProvider>{children}</QueryProvider>
