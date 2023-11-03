@@ -8,7 +8,7 @@ const RootLayout = ({ children }: PropsWithChildren<ParallelRoutes>) => {
     <div className="h-[100dvh] sm:h-screen">
       <Header />
       <main className="flex divide-x-2 h-full">
-        <section className="flex-[1]">{children}</section>
+        <section className="flex-[1] pc-main-grid">{children}</section>
       </main>
     </div>
   )

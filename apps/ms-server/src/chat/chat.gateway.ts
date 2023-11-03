@@ -17,7 +17,6 @@ import { Socket } from '@/chat/types/socket.types';
 import { EditUserDto } from '@/users/users.dto';
 import { InferSelectModel } from 'drizzle-orm';
 import { SendMessageDto } from './dtos/message.dto';
-import { randomInt } from 'crypto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateMessageDto } from '@/messages/message.dto';
 
@@ -115,19 +114,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     let user: InferSelectModel<typeof UserModel>;
     if (userKey) {
       user = await this.usersService.findUserdById(userKey);
-    }
+      client.data.nickname = user.nickname;
+      client.data.id = user.id;
+      this.serverRoomChange();
 
-    if (!userKey || !user) {
-      const {
-        data: { nickname },
-      } = client;
-      user = await this.usersService.createUser({ nickname });
+      return user;
     }
-    client.data.nickname = user.nickname;
-    client.data.id = user.id;
-    this.serverRoomChange();
-
-    return user;
   }
 
   @SubscribeMessage('GET_SENTIMENTS')
@@ -141,8 +133,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleConnection(@ConnectedSocket() client: Socket) {
     this.logger.debug(`CONNECTED : ${client.id}`);
     this.logger.debug(`NAMESPACE : ${client.nsp.name}`);
-
-    client.data.nickname = '익명#' + randomInt(100000);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {

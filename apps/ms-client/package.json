@@ -1,5 +1,5 @@
 {
-  "name": "ms-client",
+  "name": "@emochat/client",
   "version": "0.1.0",
   "private": true,
   "scripts": {

@@ -1,5 +1,5 @@
 {
-  "name": "ms-server",
+  "name": "@emochat/server",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -27,7 +27,7 @@
   "dependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
-    "@nestjs/event-emitter": "^2.0.2",
+    "@nestjs/event-emitter": "2.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.2.7",
     "@nestjs/websockets": "^10.2.7",

@@ -1,8 +1,6 @@
 'use client'
-import React, { ReactNode } from 'react'
+import React from 'react'
 import { ModeToggle } from './mode-toggle'
-import { usePathname } from 'next/navigation'
-import CreateRoomForm from './create-room-form'
 import UserSetting from './user-setting'
 import Image from 'next/image'
 
@@ -10,7 +8,7 @@ interface HeaderProps {}
 
 const Header = () => {
   return (
-    <div className="bg-secondary w-ful h-12 flex items-center px-4 text-2xl justify-between">
+    <div className="bg-secondary w-ful h-12 flex items-center px-4 text-2xl justify-between border">
       <div className="flex space-x-4 items-center">
         <div className="w-6 h-6 relative">
           <Image src="/images/logo.png" alt="logo" fill />

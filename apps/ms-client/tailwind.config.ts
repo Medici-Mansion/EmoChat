@@ -23,6 +23,7 @@ module.exports = {
         background: 'var(--background)',
         foreground: 'hsl(var(--foreground))',
         chatground: 'var(--chatground)',
+        disabled: 'var(--disabled)',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',

@@ -194,97 +194,93 @@ const RoomPage = ({ params: { roomName } }: any) => {
 
   return (
     <>
-      <article className="h-[calc(100dvh-48px)] flex divide-x-2">
-        <div className="p-3 py-4">
-          <RoomCard roomName={roomName} />
-          <div className="flex flex-col space-y-2 mt-2">
-            <AnimatePresence mode="popLayout">
-              {users.map((user, index) => (
-                <motion.div
-                  {...fadeInOutMotion}
-                  key={user + index}
-                  className="flex items-center space-x-2"
-                >
-                  <Users />
-                  <p>{user}</p>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
-        <div
-          ref={chatScroller}
-          className="relative grow h-screen overflow-y-scroll bg-chatground"
-        >
-          <div className="min-h-[calc(100%-52px-48px)] mt-4 pb-[52px]">
-            {messages.map(
-              ({ id, message, nickname, createdAt, font }, index) => (
-                <ChatBox
-                  sender={nickname}
-                  font={font}
-                  content={message}
-                  createdAt={createdAt}
-                  isMe={id === socket.id}
-                  key={id + index + createdAt}
-                />
-              ),
-            )}
-          </div>
-
-          <form
-            className="sticky bottom-[48px]"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
-            <Controller
-              control={form.control}
-              name="sentiment"
-              render={({ field }) => (
-                <div className="flex justify-around py-2">
-                  <SentimentsRadio
-                    sentiments={sentiments}
-                    onValueChange={(sentiment) => {
-                      field.onChange(sentiment.id)
-                    }}
-                  />
-                </div>
-              )}
-            />
-            <div className="relative  p-2 px-4 bg-transparent">
-              <Input
-                autoComplete="off"
-                onFocus={() => {
-                  setIsEdit(true)
-                }}
-                className="pr-10 bg-chatbox-others-box"
-                {...form.register('message', {
-                  onChange(event) {
-                    if (event.target.value.length <= 0) {
-                      isEdit && setIsEdit(false)
-                    } else {
-                      !isEdit && setIsEdit(true)
-                    }
-                  },
-                  onBlur() {
-                    if (form.getValues().message.length <= 0) {
-                      setIsEdit(false)
-                    }
-                  },
-                  required: 'Message is required.',
-                })}
-              />
-              <button
-                className="absolute right-6 top-1/2 -translate-y-1/2 hover:cursor-pointer"
-                type="submit"
+      <div className="p-3 py-4 hidden sm:block">
+        <RoomCard roomName={roomName} />
+        <div className="flex flex-col space-y-2 mt-2">
+          <AnimatePresence mode="popLayout">
+            {users.map((user, index) => (
+              <motion.div
+                {...fadeInOutMotion}
+                key={user + index}
+                className="flex items-center space-x-2"
               >
-                <Send />
-              </button>
-            </div>
-          </form>
+                <Users />
+                <p>{user}</p>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
-        <aside className="px-4">
-          <video autoPlay muted playsInline ref={videoRef}></video>
-        </aside>
-      </article>
+      </div>
+      <div
+        ref={chatScroller}
+        className="relative grow h-screen overflow-y-scroll bg-chatground"
+      >
+        <div className="min-h-[calc(100%-52px-48px)] mt-4 pb-[52px]">
+          {messages.map(({ id, message, nickname, createdAt, font }, index) => (
+            <ChatBox
+              sender={nickname}
+              font={font}
+              content={message}
+              createdAt={createdAt}
+              isMe={id === socket.id}
+              key={id + index + createdAt}
+            />
+          ))}
+        </div>
+
+        <form
+          className="sticky bottom-[48px]"
+          onSubmit={form.handleSubmit(onSubmit)}
+        >
+          <Controller
+            control={form.control}
+            name="sentiment"
+            render={({ field }) => (
+              <div className="flex justify-around py-2">
+                <SentimentsRadio
+                  sentiments={sentiments}
+                  onValueChange={(sentiment) => {
+                    field.onChange(sentiment.id)
+                  }}
+                />
+              </div>
+            )}
+          />
+          <div className="relative  p-2 px-4 bg-transparent">
+            <Input
+              autoComplete="off"
+              onFocus={() => {
+                setIsEdit(true)
+              }}
+              className="pr-10 bg-chatbox-others-box"
+              {...form.register('message', {
+                onChange(event) {
+                  if (event.target.value.length <= 0) {
+                    isEdit && setIsEdit(false)
+                  } else {
+                    !isEdit && setIsEdit(true)
+                  }
+                },
+                onBlur() {
+                  if (form.getValues().message.length <= 0) {
+                    setIsEdit(false)
+                  }
+                },
+                required: 'Message is required.',
+              })}
+            />
+            <button
+              className="absolute right-6 top-1/2 -translate-y-1/2 hover:cursor-pointer"
+              type="submit"
+            >
+              <Send />
+            </button>
+          </div>
+        </form>
+      </div>
+      <aside className="px-4 hidden sm:block">
+        <video autoPlay muted playsInline ref={videoRef}></video>
+      </aside>
     </>
   )
 }
