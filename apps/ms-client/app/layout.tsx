@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider'
 import { QueryProvider } from '@/components/providers/query-provider'
 import SocketProvider from '@/components/providers/socket-provier'
 import { cn } from '@/lib/utils'
+import SplashScreen from '@/components/splash-screen'
 
 export const metadata: Metadata = {
   title: 'MS Messenger',
@@ -25,7 +26,10 @@ export default function RootLayout({
           storageKey="emochat-theme"
         >
           <SocketProvider>
-            <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>
+              {children}
+              <SplashScreen />
+            </QueryProvider>
           </SocketProvider>
         </ThemeProvider>
       </body>

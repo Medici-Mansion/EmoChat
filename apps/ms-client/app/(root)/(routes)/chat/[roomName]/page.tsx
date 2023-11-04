@@ -48,15 +48,15 @@ const RoomPage = ({ params: { roomName } }: any) => {
     onMounted(socket) {
       socket.emit('JOIN_ROOM', roomName)
       socket.listen('WELCOME', ({ id, nickname, roomName }) => {
-        setMessage((prev) => [
-          ...prev,
-          {
-            createdAt: new Date(),
-            id,
-            message: `${nickname} 님이 입장하였습니다.`,
-            nickname,
-          },
-        ])
+        // setMessage((prev) => [
+        //   ...prev,
+        //   {
+        //     createdAt: new Date(),
+        //     id,
+        //     message: `${nickname} 님이 입장하였습니다.`,
+        //     nickname,
+        //   },
+        // ])
       })
 
       socket.listen('RESERVE_MESSAGE', (sender) => {
