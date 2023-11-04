@@ -19,7 +19,9 @@ import { USER_UNIQUE_KEY } from '@/constants'
 import { SocketContext } from './providers/socket-provier'
 import { Input } from '@/components/ui/input'
 import { Button } from './ui/button'
-import { User } from 'lucide-react'
+import { User as UserIcon } from 'lucide-react'
+import { User } from '@/types'
+import { useUser } from '@/hooks/use-user'
 
 interface UserSettingParams {
   nickname: string
@@ -38,7 +40,7 @@ const UserSetting = () => {
       setInfo?.({ id: socket.id, nickname: nickname })
       form.setValue('nickname', nickname)
     },
-    [setInfo, socket.id],
+    [form, setInfo, socket.id],
   )
   const onSubmit = (data: UserSettingParams) => {
     // TYPE_ALIAS : data => client.data
@@ -53,7 +55,7 @@ const UserSetting = () => {
       'USER_JOIN',
       localStorage.getItem(USER_UNIQUE_KEY),
       // TYPE_ALIAS : user => UserModel
-      (user: any) => {
+      (user: User) => {
         localStorage.setItem(USER_UNIQUE_KEY, user.id)
         if (user.nickname) {
           setNickname(user.nickname)
@@ -66,7 +68,7 @@ const UserSetting = () => {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="icon" className="shadow-none">
-          <User />
+          <UserIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

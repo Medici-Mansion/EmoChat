@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { QueryProvider } from '@/components/providers/query-provider'
 import SocketProvider from '@/components/providers/socket-provier'
+import SplashScreen from '@/components/splash-screen'
 
 export const metadata: Metadata = {
   title: 'MS Messenger',
@@ -25,12 +26,15 @@ export default function RootLayout({
       <body>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem={false}
-          storageKey="discord-theme"
+          storageKey="emochat-theme"
         >
           <SocketProvider>
-            <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>
+              {children}
+              <SplashScreen />
+            </QueryProvider>
           </SocketProvider>
         </ThemeProvider>
       </body>
