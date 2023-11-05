@@ -16,3 +16,9 @@ export interface User {
   isDefaultAvatar: boolean
   nickname: string
 }
+
+export type WithParam<T extends string> = {
+  params: {
+    [key in T]: string
+  }
+}

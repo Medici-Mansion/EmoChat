@@ -11,19 +11,24 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const checkUser = async (userId: string) => {
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/api/users`
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      userId,
-    }),
-  })
-  const { user } = (await response.json()) as { user: User | null }
+  try {
+    const url = `${process.env.NEXT_PUBLIC_SITE_URL}/api/users`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+      }),
+    })
+    const { user } = (await response.json()) as { user: User | null }
 
-  return user
+    return user
+  } catch (err) {
+    console.error(err)
+    return null
+  }
 }
 export const generateNickname = () => {
   const determiners = [

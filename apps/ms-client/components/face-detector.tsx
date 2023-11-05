@@ -123,8 +123,14 @@ const FaceDetector = ({
   }, [startStream, stopStream])
 
   return (
-    <aside className="invisible w-0 sm:visible sm:w-fit px-0 sm:px-4">
-      <video autoPlay muted playsInline ref={videoRef}></video>
+    <aside className="invisible w-0 p-3 sm:visible sm:w-full px-0 sm:px-4">
+      <video
+        autoPlay
+        muted
+        playsInline
+        ref={videoRef}
+        className="rounded-2xl"
+      ></video>
     </aside>
   )
 }

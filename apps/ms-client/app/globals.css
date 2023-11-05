@@ -10,7 +10,7 @@
 
     --disabled : #667085;
 
-    --chatground: #eff0f2;
+    --chatground: 239 240 242;
 
     --chatbox-me-box: #1b72c0;
     --chatbox-me-text: #ffffff;
@@ -88,7 +88,7 @@
 
     --disabled : #667085;
 
-    --chatground: #0e181e;
+    --chatground: 14 24 30;
 
     --chatbox-me-box: #9cd0ff;
     --chatbox-me-text: #0e181e;
@@ -132,9 +132,22 @@
 
 @layer components {
   .pc-main-grid {
-    @apply flex grid-cols-[minmax(min-content,1fr)_3fr_minmax(min-content,1fr)] sm:grid
+    @apply flex grid-cols-[minmax(min-content,1fr)_3fr_minmax(min-content,1fr)] sm:grid;
+  }
+  .elevation-t{
+    position: relative;
+  }
+  .elevation-t::before {
+    content: "";
+    position : absolute;
+    height: 2rem;
+    width: 100%;
+    top: -2rem;
+    @apply bg-gradient-to-t from-chatground to-chatground/0;
+  
   }
 }
+
 
 .text-clamp {
   overflow: hidden;

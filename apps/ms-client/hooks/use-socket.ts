@@ -44,7 +44,7 @@ const useSocket = ({
         }
         onConnect && onConnect(socket)
       })
-      socket.on('ROOM_CHANGE', (rooms) => {
+      socket.listen('ROOM_CHANGE', (rooms) => {
         if (isError) {
           setIsError(null)
         }

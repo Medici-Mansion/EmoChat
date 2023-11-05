@@ -43,7 +43,7 @@ const SplashScreen = ({ isInfinity = false }: SplashScreenProps) => {
           onAnimationComplete={() => {
             !isInfinity && setTimeout(() => setCompleted(true), 500)
           }}
-          className="h-[100dvh] sm:h-screen flex items-center justify-center flex-col space-y-4 fixed w-full bg-background top-0"
+          className="h-[100dvh] sm:h-screen flex items-center justify-center flex-col space-y-4 fixed w-full bg-background top-0 z-20"
         >
           <motion.div
             variants={{

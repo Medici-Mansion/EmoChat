@@ -1,9 +1,16 @@
 import type { Socket as S } from 'socket.io-client'
 
+interface SocketUserData {
+  id: string
+  createdAt: Date
+  nickname: string
+  avatar: string
+  isDefaultAvatar: boolean
+}
 interface Room {
   name: string
   count: number
-  users: string[]
+  users: SocketUserData[]
 }
 
 interface Font {

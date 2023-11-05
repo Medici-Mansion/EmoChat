@@ -22,7 +22,7 @@ module.exports = {
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        chatground: 'var(--chatground)',
+        chatground: 'rgb(var(--chatground) / <alpha-value>)',
         disabled: 'var(--disabled)',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
@@ -85,5 +85,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), require('tailwind-scrollbar-hide')],
 }

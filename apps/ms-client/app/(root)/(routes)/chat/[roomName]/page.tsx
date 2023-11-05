@@ -4,15 +4,16 @@ import ChatBox from '@/components/chat-box'
 import { Input } from '@/components/ui/input'
 import useSocket from '@/hooks/use-socket'
 import { Send, Users } from 'lucide-react'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { ReservedMessage } from '@/socket'
-import { Sentiment } from '@/types'
+import { ReservedMessage, SocketUserData } from '@/socket'
+import { Sentiment, WithParam } from '@/types'
 import SentimentsRadio from '@/components/sentiments-radio'
 import FaceDetector from '@/components/face-detector'
 import RoomCard from '@/components/room-card'
 import { AnimatePresence, motion } from 'framer-motion'
 import { fadeInOutMotion } from '@/motions'
+import Image from 'next/image'
 
 interface RoomFormValue {
   message: string
@@ -23,7 +24,13 @@ interface Message extends ReservedMessage {
   createdAt: Date
 }
 
-const RoomPage = ({ params: { roomName } }: any) => {
+const RoomPage = ({
+  params: { roomName: encodedRoomName },
+}: WithParam<'roomName'>) => {
+  const roomName = useMemo(
+    () => decodeURIComponent(encodedRoomName),
+    [encodedRoomName],
+  )
   const [messages, setMessage] = useState<Message[]>([])
   const [sentiments, setSentiments] = useState<Sentiment[]>([])
   const [isEdit, setIsEdit] = useState(false)
@@ -37,7 +44,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
     emotion: 'neutral',
   })
 
-  const [users, setUsers] = useState<string[]>([])
+  const [users, setUsers] = useState<SocketUserData[]>([])
 
   const { socket } = useSocket({
     nsp: '/',
@@ -72,7 +79,12 @@ const RoomPage = ({ params: { roomName } }: any) => {
       socket.emit('EXIT_ROOM')
     },
     onRoomChanged(rooms) {
-      setUsers(rooms.find((room) => room.name === roomName)?.users || [])
+      if (rooms?.length) {
+        setUsers(
+          rooms.filter((room) => !!room).find((room) => room.name === roomName)
+            ?.users || [],
+        )
+      }
     },
   })
 
@@ -92,28 +104,47 @@ const RoomPage = ({ params: { roomName } }: any) => {
 
   return (
     <>
-      <div className="p-3 py-4 hidden sm:block">
+      <div className="p-3 py-2 hidden sm:block">
         <RoomCard roomName={roomName} />
-        <div className="flex flex-col space-y-2 mt-2">
+        <div className="pt-6">
           <AnimatePresence mode="popLayout">
-            {users.map((user, index) => (
-              <motion.div
-                {...fadeInOutMotion}
-                key={user + index}
-                className="flex items-center space-x-2"
-              >
-                <Users />
-                <p>{user}</p>
-              </motion.div>
-            ))}
+            {users.map((user) => {
+              return (
+                <motion.div
+                  {...fadeInOutMotion}
+                  key={user.id}
+                  className="flex items-center space-x-2 pl-9"
+                >
+                  {user.isDefaultAvatar ? (
+                    <div className="aspect-square relative w-8 h-8">
+                      <Image
+                        src={`/images/avatar/${user.avatar}.png`}
+                        alt="avatar"
+                        fill
+                      />
+                    </div>
+                  ) : (
+                    ''
+                  )}
+                  <p className="opacity-60">{user.nickname}</p>
+                </motion.div>
+              )
+            })}
           </AnimatePresence>
         </div>
       </div>
       <div
         ref={chatScroller}
-        className="relative grow h-screen overflow-y-scroll bg-chatground"
+        className="relative grow h-[calc(100dvh-var(--header-height))] bg-chatground flex flex-col overflow-clip"
       >
-        <div className="min-h-[calc(100%-52px-48px)] mt-4 pb-[52px]">
+        <div className="grow overflow-y-scroll scrollbar-hide">
+          <div className="py-4 px-2 flex items-center backdrop-blur-lg h-10 sticky bg-primary/70 top-0 z-10">
+            <h2 className="text-2xl">{roomName}</h2>
+            <p className="flex items-center space-x-2 grow">
+              <Users size={20} />
+              <span className="text-md">{users.length}</span>
+            </p>
+          </div>
           {messages.map(({ id, message, nickname, createdAt, font }, index) => (
             <ChatBox
               sender={nickname}
@@ -127,7 +158,7 @@ const RoomPage = ({ params: { roomName } }: any) => {
         </div>
 
         <form
-          className="sticky bottom-[48px]"
+          className="bg-chatground elevation-t"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <Controller
@@ -179,7 +210,6 @@ const RoomPage = ({ params: { roomName } }: any) => {
       <FaceDetector
         batchRunning={!isEdit}
         onEmotionChange={(emotion) => {
-          console.log(emotion)
           emotionRef.current = emotion
           socket.emit(
             'GET_SENTIMENTS',

@@ -70,7 +70,7 @@ const JoinPage = () => {
             <div className="w-12 h-12 relative">
               <Image src="/images/logo.png" alt="logo" fill />
             </div>
-            <h1 className="font-bold text-4xl">EmoChat</h1>
+            <h1 className="font-extrabold text-4xl">EmoChat</h1>
           </div>
           <FormField
             control={form.control}
