@@ -79,6 +79,7 @@ const RoomPage = ({
       socket.emit('EXIT_ROOM')
     },
     onRoomChanged(rooms) {
+      console.log(rooms)
       if (rooms?.length) {
         setUsers(
           rooms.filter((room) => !!room).find((room) => room.name === roomName)

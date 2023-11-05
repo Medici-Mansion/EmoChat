@@ -7,6 +7,7 @@ import { SentimentsModule } from './sentiments/sentiments.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { MessagesModule } from './messages/messages.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ChatroomsModule } from './chatrooms/chatrooms.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     SentimentsModule,
     StatisticsModule,
     MessagesModule,
+    ChatroomsModule,
   ],
   controllers: [],
   providers: [],

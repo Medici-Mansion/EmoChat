@@ -12,14 +12,14 @@ import {
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
 import { GetServerRoomDto } from '@/chat/dtos/room.dto';
-import { Logger } from '@nestjs/common';
+import { Logger, OnModuleInit } from '@nestjs/common';
 import { Socket } from '@/chat/types/socket.types';
 import { EditUserDto } from '@/users/users.dto';
 import { InferSelectModel } from 'drizzle-orm';
 import { SendMessageDto } from './dtos/message.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateMessageDto } from '@/messages/message.dto';
-import { randomInt } from 'crypto';
+import { ChatroomsService } from '@/chatrooms/chatrooms.service';
 
 interface RoomInfoData {
   users: Set<Socket['data']>;
@@ -46,12 +46,23 @@ function getMapData<K extends keyof RoomInfoData>(
   },
   namespace: '/',
 })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit
+{
   constructor(
     private readonly usersService: UsersService,
     private readonly sentimentsService: SentimentsService,
+    private readonly chatRoomsService: ChatroomsService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
+  async onModuleInit() {
+    const rooms = await this.chatRoomsService.getChatRooms();
+    rooms.forEach((room) => {
+      const roomInfoMap = new Map();
+      roomInfoMap.set('roomName', room.roomName);
+      this.roomInfo.set(room.id, roomInfoMap);
+    });
+  }
 
   // { roomName: string; users: Set<Socket['data']> }
   private roomInfo: Map<string, RoomNameMap> = new Map();
@@ -66,14 +77,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() roomId: string,
   ) {
     client.join(roomId);
-    let room = this.roomInfo.get(roomId);
-    if (!room) {
-      const roomName = `#익명${randomInt(10000)}`;
-      room = new Map();
-      room.set('roomName', roomName);
-      room.set('users', new Set([]));
-    }
-    room.set('users', getMapData(room, 'users').add(client.data));
+    const room = this.roomInfo.get(roomId);
+
+    const users = getMapData(room, 'users');
+
+    room.set('users', users ? users.add(client.data) : new Set([client.data]));
+
     const roomName = getMapData(room, 'roomName');
     this.roomInfo.set(roomId, room);
 
@@ -191,9 +200,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         users.delete(client.data);
         room.set('users', users);
         this.roomInfo.set(roomId, room);
-        if (users.size <= 0) {
-          this.roomInfo.delete(roomId);
-        }
       }
 
       this.io.server.to(roomId).emit('USER_EXIT', nickname);
@@ -205,48 +211,68 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private serverRoomChange(roomChangeArgs?: Partial<GetServerRoomDto>) {
     const { isEmit } = roomChangeArgs || { isEmit: true };
-    const {
-      adapter: { rooms, sids },
-    } = this.io.server.of('/');
-    const filteredRooms = Array.from(rooms.keys()).filter((key) => {
-      return sids.get(key) === undefined;
-    });
-    const roomObj: {
-      [key in string]: {
-        name: string;
-        count: number;
-        users: Set<Socket['data']>;
-      };
-    } = {};
-    filteredRooms.forEach((room) => {
-      const roomName = decodeURIComponent(room);
+    // const {
+    //   adapter: { rooms, sids },
+    // } = this.io.server.of('/');
+    // const filteredRooms = Array.from(rooms.keys()).filter((key) => {
+    //   return sids.get(key) === undefined;
+    // });
+    // const roomObj: {
+    //   [key in string]: {
+    //     name: string;
+    //     count: number;
+    //     users: Set<Socket['data']>;
+    //   };
+    // } = {};
+    // filteredRooms.forEach((room) => {
+    //   const roomName = decodeURIComponent(room);
 
-      roomObj[roomName] = {
-        name: roomName,
-        count: rooms.get(room).size,
-        users: new Set(),
-      };
-    });
+    //   roomObj[roomName] = {
+    //     name: roomName,
+    //     count: rooms.get(room).size,
+    //     users: new Set(),
+    //   };
+    // });
 
-    this.io.sockets.forEach((socket) => {
-      if (socket.data.roomName) {
-        const userRoomName = decodeURIComponent(socket.data.roomName);
-        roomObj[userRoomName].users.add(socket.data.user);
-      }
-    });
+    // this.io.sockets.forEach((socket) => {
+    //   if (socket.data.roomName) {
+    //     const userRoomName = decodeURIComponent(socket.data.roomName);
+    //     roomObj[userRoomName].users.add(socket.data.user);
+    //   }
+    // });
 
-    const AllRooms = Object.keys(roomObj).map((roomName) => {
-      const users: Socket['data'][] = [];
-      roomObj[roomName].users.forEach((user) => {
+    // const AllRooms = Object.keys(roomObj).map((roomName) => {
+    //   const users: Socket['data'][] = [];
+    //   roomObj[roomName].users.forEach((user) => {
+    //     users.push(user);
+    //   });
+    //   return { ...roomObj[roomName], users };
+    // });
+    // console.log([...this.roomInfo]);
+    // console.log(
+    //   this.roomInfo.get('A')?.get('users'),
+    //   "this.roomInfo.get('A').get('users')",
+    // );
+
+    const response = [];
+    const keys = this.roomInfo.keys();
+    while (true) {
+      const { value, done } = keys.next();
+      if (done) break;
+      const temp = {};
+      temp['roomId'] = value;
+      temp['roomName'] = this.roomInfo.get(value).get('roomName');
+      const users = [];
+      getMapData(this.roomInfo.get(value), 'users')?.forEach((user) => {
         users.push(user);
       });
-      return { ...roomObj[roomName], users };
-    });
-    console.log([...this.roomInfo]);
 
-    if (isEmit) {
-      this.io.server.emit('ROOM_CHANGE', AllRooms);
+      temp['users'] = users;
+      response.push(temp);
     }
-    return AllRooms;
+    if (isEmit) {
+      this.io.server.emit('ROOM_CHANGE', response);
+    }
+    return response;
   }
 }

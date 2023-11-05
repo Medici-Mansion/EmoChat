@@ -2,14 +2,19 @@
 
 import useSocket from '@/hooks/use-socket'
 import { cn } from '@/lib/utils'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import RoomCard from './room-card'
 import Link from 'next/link'
 import { AVATAR_COLORS } from '@/constants'
 
 const LobbyScreen = () => {
+  const [rooms, setRooms] = useState<{ roomId: string; roomName: string }[]>([])
   useSocket({
     nsp: '/',
+    onRoomChanged(newRooms: any) {
+      console.log(newRooms)
+      setRooms(() => newRooms)
+    },
   })
 
   const RoomNames = useMemo(
@@ -26,12 +31,9 @@ const LobbyScreen = () => {
         'flex flex-col sm:grid sm:grid-cols-2 gap-y-6 gap-x-8 h-fit',
       )}
     >
-      {RoomNames.map(({ code, color }, index) => (
-        <Link
-          href={`/chat/${String.fromCharCode(code)}`}
-          key={code + '' + color}
-        >
-          <RoomCard roomName={String.fromCharCode(code)} />
+      {rooms.map(({ roomId, roomName }, index) => (
+        <Link href={`/chat/${roomId}`} key={roomId}>
+          <RoomCard roomName={roomName} />
         </Link>
       ))}
     </div>
