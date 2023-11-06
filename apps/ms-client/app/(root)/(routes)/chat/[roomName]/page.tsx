@@ -177,9 +177,9 @@ const RoomPage = ({
               />
             </div>
           </div>
-          {messages.map(({ id, message, nickname, createdAt, font }, index) => (
+          {messages.map(({ id, message, createdAt, font, userId }, index) => (
             <ChatBox
-              sender={usersMap[id]}
+              sender={usersMap[userId]}
               font={font}
               content={message}
               createdAt={createdAt}

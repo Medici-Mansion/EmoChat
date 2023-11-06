@@ -120,6 +120,7 @@ export class ChatGateway
       message,
       nickname,
       id: client.id,
+      userId: client.data.user.id,
       font,
     });
   }
