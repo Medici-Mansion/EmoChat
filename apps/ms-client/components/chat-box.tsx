@@ -66,6 +66,7 @@ const ChatBox = ({ content, isMe, createdAt, font, sender }: ChatBoxProps) => {
               isMe
                 ? 'origin-right bg-chatbox-me-box text-chatbox-me-text rounded-br-sm'
                 : 'origin-left bg-chatbox-others-box text-chatbox-others-text rounded-bl-sm',
+              !font && 'text-xl',
             )}
             style={
               font
