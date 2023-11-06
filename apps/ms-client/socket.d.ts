@@ -31,6 +31,7 @@ interface SendMessageData {
 
 export interface ReservedMessage {
   id: string
+  userId: string
   message: string
   nickname: string
   font?: Font
