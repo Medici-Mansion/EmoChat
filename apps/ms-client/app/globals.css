@@ -83,7 +83,7 @@
   }
 
   .dark {
-    --background: #000000;
+    --background: 0 0% 0%;
     --foreground: 60 9.1% 97.8%;
 
     --disabled: #667085;
@@ -132,7 +132,7 @@
 
 @layer components {
   .pc-main-grid {
-    @apply flex grid-cols-[minmax(min-content,1fr)_3fr_minmax(min-content,1fr)] sm:grid;
+    @apply flex grid-cols-[minmax(10dvw,20dvw)_3fr_minmax(10dvw,20dvw)] sm:grid;
   }
   .elevation-t {
     position: relative;

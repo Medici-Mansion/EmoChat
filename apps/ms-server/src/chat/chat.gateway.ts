@@ -21,24 +21,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateMessageDto } from '@/messages/message.dto';
 import { ChatroomsService } from '@/chatrooms/chatrooms.service';
 
-interface RoomInfoData {
-  roomName: string;
-}
-
-type MapKey = keyof RoomInfoData;
-type RoomNameMap<K = MapKey> = Map<
-  K,
-  K extends keyof RoomInfoData ? RoomInfoData[K] : never
->;
-
-function getMapData<K extends keyof RoomInfoData>(
-  map: RoomNameMap<keyof RoomInfoData>,
-  key: K,
-) {
-  const data = map.get(key) as RoomInfoData[K];
-  return data;
-}
-
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -55,16 +37,13 @@ export class ChatGateway
     private readonly eventEmitter: EventEmitter2,
   ) {}
   async onModuleInit() {
-    console.log('!!');
     const rooms = await this.chatRoomsService.getChatRooms();
     rooms.forEach((room) => {
-      const roomInfoMap = new Map();
-      roomInfoMap.set('roomName', room.roomName);
-      this.roomInfo.set(room.id, roomInfoMap);
+      this.roomInfo.set(room.id, room.roomName);
     });
   }
 
-  private roomInfo: Map<string, RoomNameMap> = new Map();
+  private roomInfo: Map<string, string> = new Map();
 
   @WebSocketServer() private readonly io: Namespace;
   private readonly logger: Logger = new Logger(ChatGateway.name);
@@ -76,14 +55,8 @@ export class ChatGateway
     @MessageBody() roomId: string,
   ) {
     client.join(roomId);
-    const room = this.roomInfo.get(roomId);
-
-    // room.set('users', users ? users.add(client.data) : new Set([client.data]));
-
-    const roomName = getMapData(room, 'roomName');
-    this.roomInfo.set(roomId, room);
     client.data.roomId = roomId;
-    client.to(roomName).emit('WELCOME', client.data);
+    client.to(roomId).emit('WELCOME', client.data);
     this.serverRoomChange();
     return this.getJoinedUser(roomId);
   }
@@ -149,8 +122,23 @@ export class ChatGateway
     if (roomId) {
       this.getJoinedUser(roomId);
     }
-
+    this.io.to(client.id).emit('USER_SETTING', client.data.user);
     return client.data;
+  }
+
+  @SubscribeMessage('ROOM_SETTING')
+  handleRoomSetting(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() roomSettingParam: { roomName: string },
+  ) {
+    if (client.data.roomId && roomSettingParam?.roomName) {
+      this.chatRoomsService.updateRoomNameById({
+        roomId: client.data.roomId,
+        ...roomSettingParam,
+      });
+      this.roomInfo.set(client.data.roomId, roomSettingParam.roomName);
+      this.serverRoomChange();
+    }
   }
 
   // 유저가 첫 페이지 진입 시 회원조회 & 가입
@@ -222,7 +210,7 @@ export class ChatGateway
       if (done) break;
       const temp = {};
       temp['roomId'] = value;
-      temp['roomName'] = this.roomInfo.get(value).get('roomName');
+      temp['roomName'] = this.roomInfo.get(value);
       response.push(temp);
     }
     if (isEmit) {

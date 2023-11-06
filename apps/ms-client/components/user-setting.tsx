@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,42 +21,55 @@ import {
 } from '@/components/ui/form'
 import { useForm } from 'react-hook-form'
 import useSocket from '@/hooks/use-socket'
-import { USER_UNIQUE_KEY } from '@/constants'
 import { SocketContext } from './providers/socket-provier'
 import { Input } from '@/components/ui/input'
 import { Button } from './ui/button'
 import { User as UserIcon } from 'lucide-react'
-import { User } from '@/types'
+import * as z from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-interface UserSettingParams {
-  nickname: string
-}
+const formschema = z.object({
+  nickname: z.string(),
+})
+
+type UserSettingParams = z.infer<typeof formschema>
 
 const UserSetting = () => {
   const [open, setOpen] = useState(false)
-  const { setInfo } = useContext(SocketContext)
+  const { setInfo, info } = useContext(SocketContext)
   const { socket } = useSocket({
     nsp: '/',
     onUserUpdated(user) {
-      setNickname(user.nickname)
+      setInfo?.(user)
     },
   })
 
-  const form = useForm<UserSettingParams>()
-  const setNickname = useCallback(
-    (nickname: string) => {
-      setInfo?.({ id: socket.id, nickname: nickname })
-      form.setValue('nickname', nickname)
+  const form = useForm<UserSettingParams>({
+    defaultValues: {
+      nickname: '',
     },
-    [form, setInfo, socket.id],
-  )
+    resolver: zodResolver(formschema),
+  })
+
   const onSubmit = (data: UserSettingParams) => {
     // TYPE_ALIAS : data => client.data
-    socket.emit('USER_SETTING', data, (data: UserSettingParams) => {
-      setNickname(data.nickname)
-      open && setOpen(false)
-    })
+    socket.emit('USER_SETTING', data)
   }
+
+  useEffect(() => {
+    socket.on('USER_SETTING', (user) => {
+      setInfo?.(user)
+    })
+    return () => {
+      socket.off('USER_SETTING')
+    }
+  }, [setInfo, socket])
+
+  useEffect(() => {
+    if (open) {
+      form.setValue('nickname', info?.nickname || '')
+    }
+  }, [form, info?.nickname, open, socket])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

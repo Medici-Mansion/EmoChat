@@ -34,7 +34,7 @@ const ChatBox = ({ content, isMe, createdAt, font, sender }: ChatBoxProps) => {
     >
       {/* {isMe ? myIcon : senderIcon} */}
       <div className={cn('flex flex-col m-2 space-y-2', isMe && 'text-right')}>
-        <Label>{!isMe && sender.nickname}</Label>
+        <Label>{!isMe && sender?.nickname}</Label>
 
         <motion.div
           initial={{

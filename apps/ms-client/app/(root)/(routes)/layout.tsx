@@ -1,9 +1,7 @@
 import Header from '@/components/header'
-import { PropsWithChildren, ReactNode } from 'react'
+import { PropsWithChildren } from 'react'
 
-interface ParallelRoutes {}
-
-const RootLayout = ({ children }: PropsWithChildren<ParallelRoutes>) => {
+const RootLayout = ({ children }: PropsWithChildren) => {
   return (
     <div className="h-[100dvh] sm:h-screen overflow-hidden">
       <Header />

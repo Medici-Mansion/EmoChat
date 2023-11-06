@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef } from 'react'
 import { ModeToggle } from './mode-toggle'
 import UserSetting from './user-setting'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const Header = () => {
   const headerRef = useRef<HTMLDivElement>(null)
@@ -49,9 +50,9 @@ const Header = () => {
       className="bg-secondary w-screen h-12 flex items-center px-4 text-2xl justify-between border-b"
     >
       <div className="flex pl-2 space-x-2 items-center">
-        <div className="w-6 h-6 relative">
+        <Link href="/lobby" className="w-6 h-6 relative">
           <Image src="/images/logo.png" alt="logo" fill />
-        </div>
+        </Link>
         <h1 className="font-extrabold text-2xl">EmoChat</h1>
       </div>
       <div className="flex items-center space-x-4">

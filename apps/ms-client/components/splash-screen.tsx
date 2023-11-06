@@ -3,8 +3,6 @@ import React, { useState } from 'react'
 import {
   AnimatePresence,
   motion,
-  useAnimate,
-  useAnimation,
 } from 'framer-motion'
 import Image from 'next/image'
 import { slideUpAndScaleTransition } from '@/motion'
@@ -14,7 +12,6 @@ interface SplashScreenProps {
 }
 const SplashScreen = ({ isInfinity = false }: SplashScreenProps) => {
   const baseText = 'EmoChat'
-  const control = useAnimation()
   const [completed, setCompleted] = useState(false)
   const transition = {
     repeat: isInfinity ? Infinity : 0,
@@ -33,9 +30,6 @@ const SplashScreen = ({ isInfinity = false }: SplashScreenProps) => {
             },
             exit: {
               opacity: 0,
-              transition: {
-                // duration: 0.5,
-              },
             },
           }}
           animate="animate"
@@ -43,7 +37,7 @@ const SplashScreen = ({ isInfinity = false }: SplashScreenProps) => {
           onAnimationComplete={() => {
             !isInfinity && setTimeout(() => setCompleted(true), 500)
           }}
-          className="h-[100dvh] sm:h-screen flex items-center justify-center flex-col space-y-4 fixed w-full bg-background top-0 z-20"
+          className="h-[100dvh] sm:h-screen flex items-center justify-center flex-col space-y-4 fixed w-full bg-background top-0 z-50"
         >
           <motion.div
             variants={{

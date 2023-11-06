@@ -1,20 +1,31 @@
 'use client'
+import Link from 'next/link'
 import * as faceapi from 'face-api.js'
-import ChatBox from '@/components/chat-box'
-import { Input } from '@/components/ui/input'
-import useSocket from '@/hooks/use-socket'
 import { ArrowLeft, Send, Users } from 'lucide-react'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { AnimatePresence, motion } from 'framer-motion'
+
 import { ReservedMessage, RoomInfo, RoomInfoUser } from '@/socket'
 import { Sentiment, User, WithParam } from '@/types'
+import { cn } from '@/lib/utils'
+import { fadeInOutMotion } from '@/motions'
+
+import useSocket from '@/hooks/use-socket'
+
+import ChatBox from '@/components/chat-box'
+import { Input } from '@/components/ui/input'
 import SentimentsRadio from '@/components/sentiments-radio'
 import FaceDetector from '@/components/face-detector'
-import { AnimatePresence, motion } from 'framer-motion'
-import { fadeInOutMotion } from '@/motions'
-import Image from 'next/image'
-import Link from 'next/link'
-import { cn } from '@/lib/utils'
+import RoomSetting from '@/components/room-setting'
+import DefaultAvatar from '@/components/default-avatar'
+import { SocketContext } from '@/components/providers/socket-provier'
 
 interface RoomFormValue {
   message: string
@@ -28,10 +39,10 @@ interface Message extends ReservedMessage {
 const RoomPage = ({
   params: { roomName: encodedRoomName },
 }: WithParam<'roomName'>) => {
+  const { info } = useContext(SocketContext)
   const [messages, setMessage] = useState<Message[]>([])
   const [sentiments, setSentiments] = useState<Sentiment[]>([])
   const [isEdit, setIsEdit] = useState(false)
-
   const form = useForm<RoomFormValue>()
   const chatScroller = useRef<HTMLDivElement>(null)
   const emotionRef = useRef<{
@@ -47,13 +58,6 @@ const RoomPage = ({
     () => decodeURIComponent(encodedRoomName),
     [encodedRoomName],
   )
-  // const joiedUsers = useMemo(() => {
-  //   const newUsers: { [key in string]: User } = {}
-  //   roomInfo?.users.forEach(({ user }) => {
-  //     newUsers[user.id] = user
-  //   })
-  //   return newUsers
-  // }, [roomInfo?.users])
 
   const { socket } = useSocket({
     nsp: '/',
@@ -61,18 +65,6 @@ const RoomPage = ({
       socket.emit('JOIN_ROOM', roomName, (users) => {
         setUsers(users)
       })
-      socket.listen('WELCOME', ({ id, nickname, roomName }) => {
-        // setMessage((prev) => [
-        //   ...prev,
-        //   {
-        //     createdAt: new Date(),
-        //     id,
-        //     message: `${nickname} 님이 입장하였습니다.`,
-        //     nickname,
-        //   },
-        // ])
-      })
-
       socket.listen(`USERS:${roomName}`, (users) => {
         setUsers(users)
       })
@@ -81,8 +73,7 @@ const RoomPage = ({
         setMessage((prev) => [...prev, { ...sender, createdAt: new Date() }])
         requestIdleCallback(() => {
           if (chatScroller?.current) {
-            const messageBoxHeight =
-              chatScroller.current.children[0].clientHeight
+            const messageBoxHeight = chatScroller.current.scrollHeight
             chatScroller.current.scrollTo({
               top: messageBoxHeight,
             })
@@ -133,7 +124,7 @@ const RoomPage = ({
       <div className="p-3 py-2 hidden sm:block">
         <Link
           href="/lobby"
-          className="flex space-x-1 items-center py-1 border-2 border-white rounded-xl min-w-fit w-full opacity-60"
+          className="flex space-x-1 items-center py-1 rounded-xl min-w-fit w-full opacity-60"
         >
           <div
             className={cn(
@@ -150,16 +141,10 @@ const RoomPage = ({
                 <motion.div
                   {...fadeInOutMotion}
                   key={userId}
-                  className="flex items-center space-x-2 pl-9"
+                  className="flex items-center space-x-2 pl-9 text-ellipsis overflow-hidden max-w-[80%] "
                 >
                   {usersMap[userId].isDefaultAvatar ? (
-                    <div className="aspect-square relative w-8 h-8">
-                      <Image
-                        src={`/images/avatar/${usersMap[userId].avatar}.png`}
-                        alt="avatar"
-                        fill
-                      />
-                    </div>
+                    <DefaultAvatar avatar={usersMap[userId].avatar} />
                   ) : (
                     ''
                   )}
@@ -170,19 +155,27 @@ const RoomPage = ({
           </AnimatePresence>
         </div>
       </div>
-      <div
-        ref={chatScroller}
-        className="relative grow h-[calc(100dvh-var(--header-height))] bg-chatground flex flex-col overflow-clip"
-      >
-        <div className="grow overflow-y-scroll scrollbar-hide">
-          <div className="py-4 px-2 flex items-center backdrop-blur-lg h-10 sticky bg-primary/70 top-0 z-10">
-            <h2 className="text-2xl">
+      <div className="relative grow h-[calc(100dvh-var(--header-height))] bg-chatground flex flex-col overflow-clip">
+        <div
+          ref={chatScroller}
+          className="grow overflow-y-scroll scrollbar-hide"
+        >
+          <div className="py-8 px-9 flex items-center backdrop-blur-lg h-10 sticky bg-background/70 top-0 z-10">
+            <h2 className="text-2xl mr-12 font-extrabold">
               {roomInfo?.roomName || '방이름 불러오는 중..'}
             </h2>
-            <p className="flex items-center space-x-2 grow">
-              <Users size={20} />
+            <p className="flex items-center space-x-2 grow opacity-70">
+              <Users size={14} />
               <span className="text-md">{users.length || 0}</span>
             </p>
+            <div className="grow flex justify-end">
+              <RoomSetting
+                roomName={roomInfo?.roomName}
+                onSubmit={(data) => {
+                  socket.emit('ROOM_SETTING', data)
+                }}
+              />
+            </div>
           </div>
           {messages.map(({ id, message, nickname, createdAt, font }, index) => (
             <ChatBox
@@ -247,6 +240,16 @@ const RoomPage = ({
         </form>
       </div>
       <FaceDetector
+        header={
+          info?.isDefaultAvatar ? (
+            <div className="flex items-center space-x-2 py-2 text-ellipsis overflow-hidden max-w-[80%]">
+              <DefaultAvatar avatar={info.avatar} />
+              <p className="opacity-60">{info.nickname}</p>
+            </div>
+          ) : (
+            ''
+          )
+        }
         batchRunning={!isEdit}
         onEmotionChange={(emotion) => {
           emotionRef.current = emotion
