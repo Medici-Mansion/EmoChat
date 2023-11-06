@@ -45,6 +45,19 @@ export class ChatGateway
 
   private roomInfo: Map<string, string> = new Map();
 
+  private roomGroupInfo = {
+    '9f8bbd24-9d98-4580-927f-15168791c121': 'Group A',
+    '42b8fb59-c78e-49ff-bfaa-685c590e73c0': 'Group B',
+    'c486c072-5900-4163-8fba-ffa3350a1680': 'Group C',
+    '487b239c-0435-4968-a423-573655a03dbf': 'Group D',
+    '265a5d3b-9dcd-4441-8925-206eb66172e9': 'Group E',
+    'd4152886-a972-496f-8fa7-727026d466e7': 'Group F',
+    '764a41c1-f25d-4cc1-a752-031059e16dd9': 'Group G',
+    '8dbb2e02-5987-4fc2-bab0-37a61881e905': 'Group H',
+    'dfaca612-1b67-4157-8187-2992725d08a9': 'Group I',
+    '8d828608-bf68-4927-b0b9-12144053728d': 'Group J',
+  };
+
   @WebSocketServer() private readonly io: Namespace;
   private readonly logger: Logger = new Logger(ChatGateway.name);
 
@@ -95,7 +108,8 @@ export class ChatGateway
       emotionTitle: emotion,
       mappingId: font?.mappingId,
       nickName: client.data.user.nickname,
-      room: decodeURIComponent(roomId),
+      roomName: this.roomGroupInfo[client.data.roomId] || '',
+      roomId: decodeURIComponent(roomId),
       text: message,
       others,
     };

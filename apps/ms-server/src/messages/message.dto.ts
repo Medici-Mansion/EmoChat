@@ -4,7 +4,8 @@ export class CreateMessageDto {
   emotionTitle: string;
   text: string;
   mappingId: string;
-  room: string;
+  roomId: string;
+  roomName: string;
   nickName: string;
   others?: faceExpressions;
 }
