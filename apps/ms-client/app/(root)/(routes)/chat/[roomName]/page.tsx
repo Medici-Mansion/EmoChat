@@ -5,6 +5,7 @@ import { ArrowLeft, Send, Users } from 'lucide-react'
 import React, {
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -44,7 +45,9 @@ const RoomPage = ({
   const [sentiments, setSentiments] = useState<Sentiment[]>([])
   const [isEdit, setIsEdit] = useState(false)
   const form = useForm<RoomFormValue>()
+
   const chatScroller = useRef<HTMLDivElement>(null)
+  const timeoutRef = useRef<NodeJS.Timeout>()
   const emotionRef = useRef<{
     emotion: string
     others?: faceapi.FaceExpressions
@@ -119,6 +122,28 @@ const RoomPage = ({
     [form, socket],
   )
 
+  const handleScroll = () => {
+    clearTimeout(timeoutRef.current)
+    const elevationDom = document.querySelector('div.elevation-t')
+    elevationDom?.classList.add('scrolling')
+    timeoutRef.current = setTimeout(() => {
+      elevationDom?.classList.remove('scrolling')
+    }, 1000)
+  }
+
+  useEffect(() => {
+    const ref = chatScroller.current
+    if (ref) {
+      ref.addEventListener('scroll', handleScroll)
+    }
+
+    return () => {
+      if (ref) {
+        ref.removeEventListener('scroll', handleScroll)
+      }
+    }
+  }, [])
+
   return (
     <>
       <div className="p-3 py-2 hidden sm:block">
@@ -190,14 +215,14 @@ const RoomPage = ({
         </div>
 
         <form
-          className="bg-chatground elevation-t"
+          className="bg-chatground relative"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <Controller
             control={form.control}
             name="sentiment"
             render={({ field }) => (
-              <div className="flex justify-around py-2">
+              <div className="flex justify-around py-2 absolute w-full -top-full bg-transparent h-full elevation-t duration-300">
                 <SentimentsRadio
                   sentiments={sentiments}
                   onValueChange={(sentiment) => {
