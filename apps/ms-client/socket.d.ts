@@ -1,16 +1,14 @@
+import { FaceExpressions } from 'face-api.js'
 import type { Socket as S } from 'socket.io-client'
+import { Sentiment, User } from './types'
 
-interface SocketUserData {
-  id: string
-  createdAt: Date
-  nickname: string
-  avatar: string
-  isDefaultAvatar: boolean
+interface RoomInfoUser {
+  roomId: string
+  user: User
 }
-interface Room {
-  name: string
-  count: number
-  users: SocketUserData[]
+interface RoomInfo {
+  roomId: string
+  roomName: string
 }
 
 interface Font {
@@ -24,6 +22,13 @@ interface Message {
   emotion: string
 }
 
+interface SendMessageData {
+  message: string
+  emotion: string
+  sentiment?: string
+  others?: FaceExpressions
+}
+
 export interface ReservedMessage {
   id: string
   message: string
@@ -32,23 +37,33 @@ export interface ReservedMessage {
 }
 
 interface ServerToClientEvents {
-  ROOM_CHANGE: (rooms: Room[]) => void
+  ROOM_CHANGE: (rooms: RoomInfo[]) => void
   WELCOME: (userInfo: {
     id: string
     nickname: string
     roomName: string
   }) => void
   RESERVE_MESSAGE: (sender: ReservedMessage) => void
+
+  [key: `USERS:${string}`]: (users: RoomInfoUser[]) => void
 }
 
 interface ClientToServerEvents {
   CONFIG: (data: string) => void
+  USER_JOIN: (userKey: string | null, cb: (user: User) => void) => void
+  JOIN_ROOM: (roomName: string, cb: (users: RoomInfoUser[]) => void) => void
+  SEND_MESSAGE: (body: SendMessageData) => void
+  GET_SENTIMENTS: (
+    emotion: string,
+    cb: (sentiments: Sentiment[]) => void,
+  ) => void
+  EXIT_ROOM: () => void
 }
 
 class DefaultSocket extends S<ServerToClientEvents, ClientToServerEvents> {}
 
 declare module 'socket.io-client' {
-  export declare class Socket extends DefaultSocket {
+  export declare class SocketClient extends DefaultSocket {
     listen: DefaultSocket['on']
   }
 }

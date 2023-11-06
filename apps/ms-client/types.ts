@@ -10,11 +10,11 @@ export interface Emotion {
   others: FaceExpressions
 }
 export interface User {
-  avatar: string
-  createdAt: string
   id: string
-  isDefaultAvatar: boolean
+  createdAt: string
   nickname: string
+  avatar: string
+  isDefaultAvatar: boolean
 }
 
 export type WithParam<T extends string> = {

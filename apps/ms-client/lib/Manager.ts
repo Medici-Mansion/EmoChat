@@ -1,15 +1,17 @@
-import { Manager as M, Socket, SocketOptions } from 'socket.io-client'
+import {
+  Manager as M,
+  Socket,
+  SocketClient,
+  SocketOptions,
+} from 'socket.io-client'
 
 export class Manager extends M {
-  private readonly sockets: { [key: string]: Socket } = {}
-  create_socket(
-    nsp: string,
-    opts?: Partial<SocketOptions> | undefined,
-  ): Socket {
+  private readonly sockets: { [key: string]: SocketClient } = {}
+  create_socket(nsp: string, opts?: Partial<SocketOptions> | undefined) {
     if (this.sockets.hasOwnProperty(nsp)) {
       return this.sockets[nsp]
     }
-    const socket = this.socket(nsp, opts) as Socket
+    const socket = this.socket(nsp, opts) as SocketClient
 
     socket.disconnect()
     socket.listen = function bindEventListnerOnSocket(ev, lisnter) {

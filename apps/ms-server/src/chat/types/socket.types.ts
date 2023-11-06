@@ -13,7 +13,7 @@ export class Socket extends S<SocketOnEventMap> {
 }
 
 export class SocketOnEventMap {
-  JOIN_ROOM: (roomName: string) => void;
+  JOIN_ROOM: (roomName: string) => Promise<Partial<SocketData>[]>;
   WELCOME: (userInfo: Socket['data']) => void;
   ROOM_CHANGE: (allRooms: Room[]) => void;
 }

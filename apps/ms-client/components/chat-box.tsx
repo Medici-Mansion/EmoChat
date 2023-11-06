@@ -3,11 +3,12 @@ import { motion } from 'framer-motion'
 import { useCallback } from 'react'
 import { Label } from './ui/label'
 import { Font } from '@/socket'
+import { User } from '@/types'
 
 type ChatBoxProps = {
   isMe: boolean
   content: string
-  sender: string
+  sender: User
   createdAt: Date
   font?: Font
 }
@@ -33,7 +34,7 @@ const ChatBox = ({ content, isMe, createdAt, font, sender }: ChatBoxProps) => {
     >
       {/* {isMe ? myIcon : senderIcon} */}
       <div className={cn('flex flex-col m-2 space-y-2', isMe && 'text-right')}>
-        <Label>{!isMe && sender}</Label>
+        <Label>{!isMe && sender.nickname}</Label>
 
         <motion.div
           initial={{

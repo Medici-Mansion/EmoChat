@@ -22,7 +22,6 @@ import { CreateMessageDto } from '@/messages/message.dto';
 import { ChatroomsService } from '@/chatrooms/chatrooms.service';
 
 interface RoomInfoData {
-  users: Set<Socket['data']>;
   roomName: string;
 }
 
@@ -56,6 +55,7 @@ export class ChatGateway
     private readonly eventEmitter: EventEmitter2,
   ) {}
   async onModuleInit() {
+    console.log('!!');
     const rooms = await this.chatRoomsService.getChatRooms();
     rooms.forEach((room) => {
       const roomInfoMap = new Map();
@@ -64,14 +64,13 @@ export class ChatGateway
     });
   }
 
-  // { roomName: string; users: Set<Socket['data']> }
   private roomInfo: Map<string, RoomNameMap> = new Map();
 
   @WebSocketServer() private readonly io: Namespace;
   private readonly logger: Logger = new Logger(ChatGateway.name);
 
   @SubscribeMessage('JOIN_ROOM')
-  handleJoinRoom(
+  async handleJoinRoom(
     @ConnectedSocket()
     client: Socket,
     @MessageBody() roomId: string,
@@ -79,17 +78,21 @@ export class ChatGateway
     client.join(roomId);
     const room = this.roomInfo.get(roomId);
 
-    const users = getMapData(room, 'users');
-
-    room.set('users', users ? users.add(client.data) : new Set([client.data]));
+    // room.set('users', users ? users.add(client.data) : new Set([client.data]));
 
     const roomName = getMapData(room, 'roomName');
     this.roomInfo.set(roomId, room);
-
     client.data.roomId = roomId;
     client.to(roomName).emit('WELCOME', client.data);
-
     this.serverRoomChange();
+    return this.getJoinedUser(roomId);
+  }
+
+  private async getJoinedUser(roomId: string) {
+    const sockets = await this.io.in(roomId).fetchSockets();
+    const users = sockets.map((socket) => socket.data) as Socket['data'][];
+    this.io.to(roomId).emit(`USERS:${roomId}`, users);
+    return users;
   }
 
   @SubscribeMessage('EXIT_ROOM')
@@ -137,9 +140,15 @@ export class ChatGateway
   @SubscribeMessage('USER_SETTING')
   handleUserSetting(
     @ConnectedSocket() client: Socket,
-    @MessageBody() userSeetingParam: { nickname: string },
+    @MessageBody() userSettingParam: { nickname: string },
   ) {
-    this.editUserSetting(client, userSeetingParam);
+    this.editUserSetting(client, userSettingParam);
+    const {
+      data: { roomId },
+    } = client;
+    if (roomId) {
+      this.getJoinedUser(roomId);
+    }
 
     return client.data;
   }
@@ -151,6 +160,7 @@ export class ChatGateway
     @MessageBody() userKey?: string,
   ) {
     let user: InferSelectModel<typeof UserModel>;
+
     if (userKey) {
       user = await this.usersService.findUserdById(userKey);
       client.data.user = user;
@@ -194,65 +204,16 @@ export class ChatGateway
     } = client;
     if (roomId) {
       client.leave(roomId);
-      const room = this.roomInfo.get(roomId);
-      const users = getMapData(room, 'users');
-      if (users) {
-        users.delete(client.data);
-        room.set('users', users);
-        this.roomInfo.set(roomId, room);
-      }
-
       this.io.server.to(roomId).emit('USER_EXIT', nickname);
       client.data.roomId = null;
       client.rooms.clear();
+      this.getJoinedUser(roomId);
     }
     this.serverRoomChange();
   }
 
-  private serverRoomChange(roomChangeArgs?: Partial<GetServerRoomDto>) {
+  private async serverRoomChange(roomChangeArgs?: Partial<GetServerRoomDto>) {
     const { isEmit } = roomChangeArgs || { isEmit: true };
-    // const {
-    //   adapter: { rooms, sids },
-    // } = this.io.server.of('/');
-    // const filteredRooms = Array.from(rooms.keys()).filter((key) => {
-    //   return sids.get(key) === undefined;
-    // });
-    // const roomObj: {
-    //   [key in string]: {
-    //     name: string;
-    //     count: number;
-    //     users: Set<Socket['data']>;
-    //   };
-    // } = {};
-    // filteredRooms.forEach((room) => {
-    //   const roomName = decodeURIComponent(room);
-
-    //   roomObj[roomName] = {
-    //     name: roomName,
-    //     count: rooms.get(room).size,
-    //     users: new Set(),
-    //   };
-    // });
-
-    // this.io.sockets.forEach((socket) => {
-    //   if (socket.data.roomName) {
-    //     const userRoomName = decodeURIComponent(socket.data.roomName);
-    //     roomObj[userRoomName].users.add(socket.data.user);
-    //   }
-    // });
-
-    // const AllRooms = Object.keys(roomObj).map((roomName) => {
-    //   const users: Socket['data'][] = [];
-    //   roomObj[roomName].users.forEach((user) => {
-    //     users.push(user);
-    //   });
-    //   return { ...roomObj[roomName], users };
-    // });
-    // console.log([...this.roomInfo]);
-    // console.log(
-    //   this.roomInfo.get('A')?.get('users'),
-    //   "this.roomInfo.get('A').get('users')",
-    // );
 
     const response = [];
     const keys = this.roomInfo.keys();
@@ -262,12 +223,6 @@ export class ChatGateway
       const temp = {};
       temp['roomId'] = value;
       temp['roomName'] = this.roomInfo.get(value).get('roomName');
-      const users = [];
-      getMapData(this.roomInfo.get(value), 'users')?.forEach((user) => {
-        users.push(user);
-      });
-
-      temp['users'] = users;
       response.push(temp);
     }
     if (isEmit) {

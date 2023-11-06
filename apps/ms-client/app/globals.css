@@ -8,7 +8,7 @@
     --background: 0 0% 100%;
     --foreground: 20 14.3% 4.1%;
 
-    --disabled : #667085;
+    --disabled: #667085;
 
     --chatground: 239 240 242;
 
@@ -86,7 +86,7 @@
     --background: #000000;
     --foreground: 60 9.1% 97.8%;
 
-    --disabled : #667085;
+    --disabled: #667085;
 
     --chatground: 14 24 30;
 
@@ -134,20 +134,18 @@
   .pc-main-grid {
     @apply flex grid-cols-[minmax(min-content,1fr)_3fr_minmax(min-content,1fr)] sm:grid;
   }
-  .elevation-t{
+  .elevation-t {
     position: relative;
   }
   .elevation-t::before {
-    content: "";
-    position : absolute;
+    content: '';
+    position: absolute;
     height: 2rem;
     width: 100%;
     top: -2rem;
     @apply bg-gradient-to-t from-chatground to-chatground/0;
-  
   }
 }
-
 
 .text-clamp {
   overflow: hidden;
@@ -155,5 +153,5 @@
   display: -webkit-box;
   -webkit-line-clamp: 1; /* 라인수 */
   -webkit-box-orient: vertical;
-  word-wrap:break-word; 
+  word-wrap: break-word;
 }

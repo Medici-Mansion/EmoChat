@@ -13,7 +13,7 @@ const SentimentsRadio = ({
   return (
     <AnimatePresence mode="popLayout">
       {sentiments.map((sm) => (
-        <motion.div {...fadeInOutMotion} key={sm.id}>
+        <motion.div {...fadeInOutMotion} key={sm.id + sm.name}>
           <input
             className="peer hidden "
             name="sentiment"

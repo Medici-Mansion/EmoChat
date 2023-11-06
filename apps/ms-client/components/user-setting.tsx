@@ -21,7 +21,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from './ui/button'
 import { User as UserIcon } from 'lucide-react'
 import { User } from '@/types'
-import { useUser } from '@/hooks/use-user'
 
 interface UserSettingParams {
   nickname: string
@@ -32,6 +31,9 @@ const UserSetting = () => {
   const { setInfo } = useContext(SocketContext)
   const { socket } = useSocket({
     nsp: '/',
+    onUserUpdated(user) {
+      setNickname(user.nickname)
+    },
   })
 
   const form = useForm<UserSettingParams>()
@@ -49,20 +51,6 @@ const UserSetting = () => {
       open && setOpen(false)
     })
   }
-
-  useEffect(() => {
-    socket.emit(
-      'USER_JOIN',
-      localStorage.getItem(USER_UNIQUE_KEY),
-      // TYPE_ALIAS : user => UserModel
-      (user: User) => {
-        localStorage.setItem(USER_UNIQUE_KEY, user.id)
-        if (user.nickname) {
-          setNickname(user.nickname)
-        }
-      },
-    )
-  }, [])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

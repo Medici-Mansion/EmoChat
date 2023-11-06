@@ -3,17 +3,18 @@ import * as faceapi from 'face-api.js'
 import ChatBox from '@/components/chat-box'
 import { Input } from '@/components/ui/input'
 import useSocket from '@/hooks/use-socket'
-import { Send, Users } from 'lucide-react'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { ArrowLeft, Send, Users } from 'lucide-react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { ReservedMessage, SocketUserData } from '@/socket'
-import { Sentiment, WithParam } from '@/types'
+import { ReservedMessage, RoomInfo, RoomInfoUser } from '@/socket'
+import { Sentiment, User, WithParam } from '@/types'
 import SentimentsRadio from '@/components/sentiments-radio'
 import FaceDetector from '@/components/face-detector'
-import RoomCard from '@/components/room-card'
 import { AnimatePresence, motion } from 'framer-motion'
 import { fadeInOutMotion } from '@/motions'
 import Image from 'next/image'
+import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 interface RoomFormValue {
   message: string
@@ -27,10 +28,6 @@ interface Message extends ReservedMessage {
 const RoomPage = ({
   params: { roomName: encodedRoomName },
 }: WithParam<'roomName'>) => {
-  const roomName = useMemo(
-    () => decodeURIComponent(encodedRoomName),
-    [encodedRoomName],
-  )
   const [messages, setMessage] = useState<Message[]>([])
   const [sentiments, setSentiments] = useState<Sentiment[]>([])
   const [isEdit, setIsEdit] = useState(false)
@@ -44,12 +41,26 @@ const RoomPage = ({
     emotion: 'neutral',
   })
 
-  const [users, setUsers] = useState<SocketUserData[]>([])
+  const [roomInfo, setRoomInfo] = useState<RoomInfo>()
+  const [users, setUsers] = useState<RoomInfoUser[]>([])
+  const roomName = useMemo(
+    () => decodeURIComponent(encodedRoomName),
+    [encodedRoomName],
+  )
+  // const joiedUsers = useMemo(() => {
+  //   const newUsers: { [key in string]: User } = {}
+  //   roomInfo?.users.forEach(({ user }) => {
+  //     newUsers[user.id] = user
+  //   })
+  //   return newUsers
+  // }, [roomInfo?.users])
 
   const { socket } = useSocket({
     nsp: '/',
     onMounted(socket) {
-      socket.emit('JOIN_ROOM', roomName)
+      socket.emit('JOIN_ROOM', roomName, (users) => {
+        setUsers(users)
+      })
       socket.listen('WELCOME', ({ id, nickname, roomName }) => {
         // setMessage((prev) => [
         //   ...prev,
@@ -60,6 +71,10 @@ const RoomPage = ({
         //     nickname,
         //   },
         // ])
+      })
+
+      socket.listen(`USERS:${roomName}`, (users) => {
+        setUsers(users)
       })
 
       socket.listen('RESERVE_MESSAGE', (sender) => {
@@ -77,17 +92,27 @@ const RoomPage = ({
     },
     onUnmounted(socket) {
       socket.emit('EXIT_ROOM')
+      socket.off(`USERS:${roomName}`)
     },
     onRoomChanged(rooms) {
-      console.log(rooms)
       if (rooms?.length) {
-        setUsers(
-          rooms.filter((room) => !!room).find((room) => room.name === roomName)
-            ?.users || [],
-        )
+        const newRoomInfo = rooms.find((room) => room.roomId === roomName)
+        if (newRoomInfo) {
+          setRoomInfo(() => newRoomInfo)
+        }
       }
     },
   })
+
+  const usersMap = useMemo(() => {
+    const newUserMap: { [key in string]: User } = {}
+    users.forEach(({ user }) => {
+      if (user?.id) {
+        newUserMap[user.id] = user
+      }
+    })
+    return newUserMap
+  }, [users])
 
   const onSubmit = useCallback(
     async ({ message, sentiment }: RoomFormValue) => {
@@ -106,20 +131,31 @@ const RoomPage = ({
   return (
     <>
       <div className="p-3 py-2 hidden sm:block">
-        <RoomCard roomName={roomName} />
+        <Link
+          href="/lobby"
+          className="flex space-x-1 items-center py-1 border-2 border-white rounded-xl min-w-fit w-full opacity-60"
+        >
+          <div
+            className={cn(
+              'w-9 h-9 flex items-center justify-center rounded-full',
+            )}
+          >
+            <ArrowLeft size={30} />
+          </div>
+        </Link>
         <div className="pt-6">
           <AnimatePresence mode="popLayout">
-            {users.map((user) => {
+            {Object.keys(usersMap).map((userId) => {
               return (
                 <motion.div
                   {...fadeInOutMotion}
-                  key={user.id}
+                  key={userId}
                   className="flex items-center space-x-2 pl-9"
                 >
-                  {user.isDefaultAvatar ? (
+                  {usersMap[userId].isDefaultAvatar ? (
                     <div className="aspect-square relative w-8 h-8">
                       <Image
-                        src={`/images/avatar/${user.avatar}.png`}
+                        src={`/images/avatar/${usersMap[userId].avatar}.png`}
                         alt="avatar"
                         fill
                       />
@@ -127,7 +163,7 @@ const RoomPage = ({
                   ) : (
                     ''
                   )}
-                  <p className="opacity-60">{user.nickname}</p>
+                  <p className="opacity-60">{usersMap[userId].nickname}</p>
                 </motion.div>
               )
             })}
@@ -140,15 +176,17 @@ const RoomPage = ({
       >
         <div className="grow overflow-y-scroll scrollbar-hide">
           <div className="py-4 px-2 flex items-center backdrop-blur-lg h-10 sticky bg-primary/70 top-0 z-10">
-            <h2 className="text-2xl">{roomName}</h2>
+            <h2 className="text-2xl">
+              {roomInfo?.roomName || '방이름 불러오는 중..'}
+            </h2>
             <p className="flex items-center space-x-2 grow">
               <Users size={20} />
-              <span className="text-md">{users.length}</span>
+              <span className="text-md">{users.length || 0}</span>
             </p>
           </div>
           {messages.map(({ id, message, nickname, createdAt, font }, index) => (
             <ChatBox
-              sender={nickname}
+              sender={usersMap[id]}
               font={font}
               content={message}
               createdAt={createdAt}
@@ -215,7 +253,7 @@ const RoomPage = ({
           socket.emit(
             'GET_SENTIMENTS',
             emotionRef.current.emotion,
-            (sentiments: Sentiment[]) => {
+            (sentiments) => {
               if (emotionRef.current.emotion === 'neutral') {
                 form.resetField('sentiment')
               }
