@@ -22,7 +22,7 @@ jobs:
           stage: dev
           yaml: |
             name: emochat-server-dev
-            app: node@16
+            app: node@18
             options:
               env:
                 - name: NODE_ENV
@@ -47,3 +47,4 @@ jobs:
               git:
                 url: git@github.com:${{ github.repository }}.git
                 ref: ${{ github.ref }}
+                path: apps/ms-server
