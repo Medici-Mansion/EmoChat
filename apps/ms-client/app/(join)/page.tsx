@@ -40,8 +40,7 @@ const JoinPage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const url = `${process.env.NEXT_PUBLIC_SITE_URL}/api/users/create`
-      const response = (await fetch(url, {
+      const response = (await fetch('/api/users', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -52,7 +51,6 @@ const JoinPage = () => {
       if (response.id) {
         localStorage.setItem(USER_UNIQUE_KEY, response.id)
       }
-      router.refresh()
       router.push('/lobby')
     } catch (err) {
       console.log(err)
