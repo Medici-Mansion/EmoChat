@@ -13,6 +13,7 @@ import {
 interface SocketData {
   id: string
   nickname: string
+  profile: string
 }
 
 export const SocketContext = createContext<{

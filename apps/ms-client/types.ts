@@ -15,6 +15,7 @@ export interface User {
   nickname: string
   avatar: string
   isDefaultAvatar: boolean
+  profile: string
 }
 
 export type WithParam<T extends string> = {
