@@ -1,5 +1,15 @@
+import * as z from 'zod'
 import React, { useContext, useEffect, useState } from 'react'
+import Image from 'next/image'
+import { useForm } from 'react-hook-form'
+import { cn } from '@/lib/utils'
 
+import { User as UserIcon, X } from 'lucide-react'
+
+import useSocket from '@/hooks/use-socket'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,17 +17,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { useForm } from 'react-hook-form'
-import useSocket from '@/hooks/use-socket'
 import { SocketContext } from './providers/socket-provier'
 import { Input } from '@/components/ui/input'
-import { Button } from './ui/button'
-import { User as UserIcon, X } from 'lucide-react'
-import * as z from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { cn } from '@/lib/utils'
-import { Label } from './ui/label'
-import Image from 'next/image'
+import { Label } from '@/components/ui/label'
 
 const formschema = z.object({
   nickname: z.string(),
@@ -27,20 +29,27 @@ const formschema = z.object({
 type UserSettingParams = z.infer<typeof formschema>
 
 interface Images {
-  id: number
   value: string
   active: boolean
   src: string
 }
 
 const images: Images[] = [
-  { id: 0, value: '0', active: true, src: '/images/avatar/0.png' },
-  { id: 1, value: '1', active: false, src: '/images/avatar/1.png' },
-  { id: 2, value: '2', active: false, src: '/images/avatar/2.png' },
-  { id: 3, value: '3', active: false, src: '/images/avatar/3.png' },
+  { value: '0', active: false, src: '/images/avatar/0.png' },
+  { value: '1', active: false, src: '/images/avatar/1.png' },
+  { value: '2', active: false, src: '/images/avatar/2.png' },
+  { value: '3', active: false, src: '/images/avatar/3.png' },
 ]
 
 const UserSetting = () => {
+  const form = useForm<UserSettingParams>({
+    defaultValues: {
+      nickname: '',
+      avatar: '',
+    },
+    resolver: zodResolver(formschema),
+  })
+
   const [open, setOpen] = useState(false)
   const { info, setInfo } = useContext(SocketContext)
   const [activeId, setActiveId] = useState(info?.avatar || '0')
@@ -50,13 +59,6 @@ const UserSetting = () => {
     onUserUpdated(user) {
       setInfo?.(user)
     },
-  })
-
-  const form = useForm<UserSettingParams>({
-    defaultValues: {
-      nickname: '',
-    },
-    resolver: zodResolver(formschema),
   })
 
   const onSubmit = (data: UserSettingParams) => {
@@ -128,7 +130,7 @@ const UserSetting = () => {
                       {images.map((img) => (
                         <div
                           className="aspect-square relative w-16 h-16"
-                          key={img.id}
+                          key={img.value}
                         >
                           <Image
                             src={img.src}
