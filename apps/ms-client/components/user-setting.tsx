@@ -1,7 +1,15 @@
+import * as z from 'zod'
 import React, { useContext, useEffect, useState } from 'react'
-import { User as UserIcon, X } from 'lucide-react'
 import Image from 'next/image'
+import { useForm } from 'react-hook-form'
 import { cn } from '@/lib/utils'
+
+import { User as UserIcon, X } from 'lucide-react'
+
+import useSocket from '@/hooks/use-socket'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,40 +17,42 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { useForm } from 'react-hook-form'
-import useSocket from '@/hooks/use-socket'
 import { SocketContext } from './providers/socket-provier'
 import { Input } from '@/components/ui/input'
-import { Button } from './ui/button'
-import * as z from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Label } from './ui/label'
+import { Label } from '@/components/ui/label'
 
 const formschema = z.object({
   nickname: z.string(),
-  profile: z.string(),
+  avatar: z.string(),
 })
 
 type UserSettingParams = z.infer<typeof formschema>
 
 interface Images {
-  id: number
   value: string
   active: boolean
   src: string
 }
 
 const images: Images[] = [
-  { id: 0, value: '0', active: true, src: '/images/avatar/0.png' },
-  { id: 1, value: '1', active: false, src: '/images/avatar/1.png' },
-  { id: 2, value: '2', active: false, src: '/images/avatar/2.png' },
-  { id: 3, value: '3', active: false, src: '/images/avatar/3.png' },
+  { value: '0', active: false, src: '/images/avatar/0.png' },
+  { value: '1', active: false, src: '/images/avatar/1.png' },
+  { value: '2', active: false, src: '/images/avatar/2.png' },
+  { value: '3', active: false, src: '/images/avatar/3.png' },
 ]
 
 const UserSetting = () => {
+  const form = useForm<UserSettingParams>({
+    defaultValues: {
+      nickname: '',
+      avatar: '',
+    },
+    resolver: zodResolver(formschema),
+  })
+
   const [open, setOpen] = useState(false)
-  const { setInfo, info } = useContext(SocketContext)
-  const [activeId, setActiveId] = useState(info?.avatar || '')
+  const { info, setInfo } = useContext(SocketContext)
+  const [activeId, setActiveId] = useState(info?.avatar || '0')
   const { socket } = useSocket({
     nsp: '/',
     onUserUpdated(user) {
@@ -50,17 +60,9 @@ const UserSetting = () => {
     },
   })
 
-  const form = useForm<UserSettingParams>({
-    defaultValues: {
-      nickname: '',
-      profile: '',
-    },
-    resolver: zodResolver(formschema),
-  })
-
   const onSubmit = (data: UserSettingParams) => {
-    // TYPE_ALIAS : data => client.data
     socket.emit('USER_SETTING', data)
+    setOpen(false)
   }
 
   useEffect(() => {
@@ -75,8 +77,10 @@ const UserSetting = () => {
   useEffect(() => {
     if (open) {
       form.setValue('nickname', info?.nickname || '')
+      form.setValue('avatar', info?.avatar || '')
+      setActiveId(info?.avatar || '')
     }
-  }, [form, info?.nickname, open, socket])
+  }, [form, info, open, socket])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -114,7 +118,7 @@ const UserSetting = () => {
             />
             <FormField
               control={form.control}
-              name="profile"
+              name="avatar"
               render={({ field }) => (
                 <FormItem>
                   <div className="space-y-2">
@@ -125,7 +129,7 @@ const UserSetting = () => {
                       {images.map((img) => (
                         <div
                           className="aspect-square relative w-16 h-16"
-                          key={img.id}
+                          key={img.value}
                         >
                           <Image
                             src={img.src}
@@ -139,7 +143,7 @@ const UserSetting = () => {
                             )}
                             onClick={() => {
                               setActiveId(img.value)
-                              form.setValue('profile', img.value)
+                              form.setValue('avatar', img.value)
                             }}
                           />
                         </div>
@@ -153,15 +157,11 @@ const UserSetting = () => {
               <Button
                 onClick={() => setOpen(false)}
                 variant={'outline'}
-                className="text-black w-full"
+                className="text-primary w-full"
               >
                 취소
               </Button>
-              <Button
-                variant={'submit'}
-                type="submit"
-                className="bg-[#0C8AFF]  w-full"
-              >
+              <Button variant={'submit'} type="submit" className="w-full">
                 확인
               </Button>
             </div>

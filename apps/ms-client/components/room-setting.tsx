@@ -65,15 +65,19 @@ const RoomSetting = ({ roomName = '', onSubmit }: RoomSettingProps) => {
                 </FormItem>
               )}
             />
-            <div className="flex justify-between space-x-2">
+            <div className="flex gap-2 pt-4 min-w-[240px]">
               <Button
                 onClick={() => setOpen(false)}
-                variant="ghost"
-                className="flex-1"
+                variant={'outline'}
+                className="w-full"
               >
                 취소
               </Button>
-              <Button type="submit" className="flex-1">
+              <Button
+                variant={'submit'}
+                type="submit"
+                className="bg-[#0C8AFF] w-full"
+              >
                 확인
               </Button>
             </div>
