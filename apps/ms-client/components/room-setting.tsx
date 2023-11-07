@@ -69,7 +69,7 @@ const RoomSetting = ({ roomName = '', onSubmit }: RoomSettingProps) => {
               <Button
                 onClick={() => setOpen(false)}
                 variant={'outline'}
-                className="text-black w-full"
+                className="w-full"
               >
                 취소
               </Button>
