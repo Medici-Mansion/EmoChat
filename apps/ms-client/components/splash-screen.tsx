@@ -1,9 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import {
-  AnimatePresence,
-  motion,
-} from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 import { slideUpAndScaleTransition } from '@/motion'
 
@@ -84,7 +81,7 @@ const SplashScreen = ({ isInfinity = false }: SplashScreenProps) => {
             }}
             initial="initial"
             animate="animate"
-            className="font-extrabold text-4xl h-10"
+            className="text-4xl h-10 logo"
           >
             {baseText.split('').map((item, index) => {
               return (

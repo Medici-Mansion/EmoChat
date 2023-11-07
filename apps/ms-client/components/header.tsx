@@ -49,11 +49,11 @@ const Header = () => {
       ref={headerRef}
       className="bg-secondary w-screen h-12 flex items-center px-4 text-2xl justify-between border-b"
     >
-      <div className="flex pl-2 space-x-2 items-center">
+      <div className="flex pl-2 space-x-3 items-center">
         <Link href="/lobby" className="w-6 h-6 relative">
           <Image src="/images/logo.png" alt="logo" fill />
         </Link>
-        <h1 className="font-extrabold text-2xl">EmoChat</h1>
+        <h1 className="logo text-xl">EmoChat</h1>
       </div>
       <div className="flex items-center space-x-4">
         <UserSetting />
