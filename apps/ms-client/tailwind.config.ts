@@ -32,6 +32,7 @@ module.exports = {
           foreground: 'hsl(var(--primary-foreground))',
           background: 'hsl(var(--primary-background))',
         },
+        submit: 'rgb(var(--submit) / <alpha-value>)',
         chatbox: {
           me: {
             box: 'var(--chatbox-me-box)',

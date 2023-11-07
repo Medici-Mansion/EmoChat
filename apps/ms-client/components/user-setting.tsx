@@ -158,15 +158,11 @@ const UserSetting = () => {
               <Button
                 onClick={() => setOpen(false)}
                 variant={'outline'}
-                className="text-black w-full"
+                className="text-primary w-full"
               >
                 취소
               </Button>
-              <Button
-                variant={'submit'}
-                type="submit"
-                className="bg-[#0C8AFF]  w-full"
-              >
+              <Button variant={'submit'} type="submit" className="w-full">
                 확인
               </Button>
             </div>
