@@ -16,13 +16,17 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        logo: ['SBAggroB', 'NanumSquare', 'sans-serif'],
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
-        background: 'var(--background)',
+        background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        chatground: 'var(--chatground)',
+        chatground: 'rgb(var(--chatground) / <alpha-value>)',
+        disabled: 'var(--disabled)',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -84,5 +88,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), require('tailwind-scrollbar-hide')],
 }

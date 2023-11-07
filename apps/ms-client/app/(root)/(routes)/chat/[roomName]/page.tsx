@@ -1,18 +1,32 @@
 'use client'
+import Link from 'next/link'
 import * as faceapi from 'face-api.js'
+import { ArrowLeft, Send, Users } from 'lucide-react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { AnimatePresence, motion } from 'framer-motion'
+
+import { ReservedMessage, RoomInfo, RoomInfoUser } from '@/socket'
+import { Sentiment, User, WithParam } from '@/types'
+import { cn } from '@/lib/utils'
+import { fadeInOutMotion } from '@/motions'
+
+import useSocket from '@/hooks/use-socket'
+
 import ChatBox from '@/components/chat-box'
 import { Input } from '@/components/ui/input'
-import useSocket from '@/hooks/use-socket'
-import { Send, Users } from 'lucide-react'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { ReservedMessage } from '@/socket'
-import { Sentiment } from '@/types'
 import SentimentsRadio from '@/components/sentiments-radio'
-import RoomCard from '@/components/room-card'
-import { AnimatePresence, motion } from 'framer-motion'
-import { fadeInOutMotion } from '@/motions'
-const INTERVAL_TIME = 500
+import FaceDetector from '@/components/face-detector'
+import RoomSetting from '@/components/room-setting'
+import DefaultAvatar from '@/components/default-avatar'
+import { SocketContext } from '@/components/providers/socket-provier'
 
 interface RoomFormValue {
   message: string
@@ -23,16 +37,17 @@ interface Message extends ReservedMessage {
   createdAt: Date
 }
 
-const RoomPage = ({ params: { roomName } }: any) => {
+const RoomPage = ({
+  params: { roomName: encodedRoomName },
+}: WithParam<'roomName'>) => {
+  const { info } = useContext(SocketContext)
   const [messages, setMessage] = useState<Message[]>([])
   const [sentiments, setSentiments] = useState<Sentiment[]>([])
   const [isEdit, setIsEdit] = useState(false)
-
-  const timer = useRef<NodeJS.Timeout>()
   const form = useForm<RoomFormValue>()
+
   const chatScroller = useRef<HTMLDivElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const streamRef = useRef<MediaStream>()
+  const timeoutRef = useRef<NodeJS.Timeout>()
   const emotionRef = useRef<{
     emotion: string
     others?: faceapi.FaceExpressions
@@ -40,31 +55,28 @@ const RoomPage = ({ params: { roomName } }: any) => {
     emotion: 'neutral',
   })
 
-  const [users, setUsers] = useState<string[]>([])
-  const checkCnt = useRef<number>(0)
+  const [roomInfo, setRoomInfo] = useState<RoomInfo>()
+  const [users, setUsers] = useState<RoomInfoUser[]>([])
+  const roomName = useMemo(
+    () => decodeURIComponent(encodedRoomName),
+    [encodedRoomName],
+  )
 
   const { socket } = useSocket({
     nsp: '/',
     onMounted(socket) {
-      socket.emit('JOIN_ROOM', roomName)
-      socket.listen('WELCOME', ({ id, nickname, roomName }) => {
-        setMessage((prev) => [
-          ...prev,
-          {
-            createdAt: new Date(),
-            id,
-            message: `${nickname} 님이 입장하였습니다.`,
-            nickname,
-          },
-        ])
+      socket.emit('JOIN_ROOM', roomName, (users) => {
+        setUsers(users)
+      })
+      socket.listen(`USERS:${roomName}`, (users) => {
+        setUsers(users)
       })
 
       socket.listen('RESERVE_MESSAGE', (sender) => {
         setMessage((prev) => [...prev, { ...sender, createdAt: new Date() }])
         requestIdleCallback(() => {
           if (chatScroller?.current) {
-            const messageBoxHeight =
-              chatScroller.current.children[0].clientHeight
+            const messageBoxHeight = chatScroller.current.scrollHeight
             chatScroller.current.scrollTo({
               top: messageBoxHeight,
             })
@@ -74,82 +86,27 @@ const RoomPage = ({ params: { roomName } }: any) => {
     },
     onUnmounted(socket) {
       socket.emit('EXIT_ROOM')
+      socket.off(`USERS:${roomName}`)
     },
     onRoomChanged(rooms) {
-      setUsers(rooms.find((room) => room.name === roomName)?.users || [])
-    },
-  })
-
-  const startStream = useCallback(async () => {
-    if (typeof window === 'undefined') return
-    Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-      faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-      faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-      faceapi.nets.faceExpressionNet.loadFromUri('/models'),
-    ])
-    const stream = await window.navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        aspectRatio: 9 / 12,
-        width: 200,
-        facingMode: 'environment',
-      },
-    })
-    streamRef.current = stream
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream
-    }
-  }, [])
-
-  const stopStream = useCallback(() => {
-    streamRef.current?.getTracks().map((track) => {
-      track.stop()
-    })
-  }, [])
-
-  const getEmotion = useCallback(
-    async (cnt: number) => {
-      const dect = await faceapi
-        .detectAllFaces(
-          videoRef.current!,
-          new faceapi.TinyFaceDetectorOptions(),
-        )
-        .withFaceLandmarks()
-        .withFaceExpressions()
-
-      if (dect?.[0]?.expressions) {
-        const expres = dect?.[0]?.expressions
-        let maxV = 0
-        let key = ''
-        Object.entries(expres).map((item) => {
-          if (item[1] > maxV) {
-            maxV = item[1]
-            key = item[0]
-          }
-        })
-
-        const { emotion } = emotionRef.current
-        if (
-          (emotion !== key && cnt < 10 && key !== 'neutral') ||
-          (emotion !== key && cnt - checkCnt.current > 6)
-        ) {
-          socket.emit('GET_SENTIMENTS', key, (sentiments: Sentiment[]) => {
-            if (key === 'neutral') {
-              form.resetField('sentiment')
-            }
-            setSentiments(sentiments)
-          })
-          checkCnt.current = cnt
-          emotionRef.current = {
-            emotion: key,
-            others: expres,
-          }
+      if (rooms?.length) {
+        const newRoomInfo = rooms.find((room) => room.roomId === roomName)
+        if (newRoomInfo) {
+          setRoomInfo(() => newRoomInfo)
         }
       }
     },
-    [form, socket],
-  )
+  })
+
+  const usersMap = useMemo(() => {
+    const newUserMap: { [key in string]: User } = {}
+    users.forEach(({ user }) => {
+      if (user?.id) {
+        newUserMap[user.id] = user
+      }
+    })
+    return newUserMap
+  }, [users])
 
   const onSubmit = useCallback(
     async ({ message, sentiment }: RoomFormValue) => {
@@ -165,126 +122,174 @@ const RoomPage = ({ params: { roomName } }: any) => {
     [form, socket],
   )
 
-  const getEmotionBatch = useCallback(() => {
-    let cnt = 0
-    return setInterval(async () => {
-      await getEmotion(cnt)
-      cnt++
-    }, INTERVAL_TIME)
-  }, [getEmotion])
+  const handleScroll = () => {
+    clearTimeout(timeoutRef.current)
+    const elevationDom = document.querySelector('div.elevation-t')
+    elevationDom?.classList.add('scrolling')
+    timeoutRef.current = setTimeout(() => {
+      elevationDom?.classList.remove('scrolling')
+    }, 1000)
+  }
 
   useEffect(() => {
-    if (!isEdit) {
-      clearInterval(timer.current)
-      timer.current = getEmotionBatch()
-    } else {
-      clearInterval(timer.current)
+    const ref = chatScroller.current
+    if (ref) {
+      ref.addEventListener('scroll', handleScroll)
     }
-    return () => {
-      clearInterval(timer.current)
-    }
-  }, [getEmotionBatch, isEdit])
 
-  useEffect(() => {
-    startStream()
     return () => {
-      stopStream()
+      if (ref) {
+        ref.removeEventListener('scroll', handleScroll)
+      }
     }
-  }, [startStream, stopStream])
+  }, [])
 
   return (
     <>
-      <article className="h-[calc(100dvh-48px)] flex divide-x-2">
-        <div className="p-3 py-4">
-          <RoomCard roomName={roomName} />
-          <div className="flex flex-col space-y-2 mt-2">
-            <AnimatePresence mode="popLayout">
-              {users.map((user, index) => (
+      <div className="p-3 py-2 hidden sm:block">
+        <Link
+          href="/lobby"
+          className="flex space-x-1 items-center py-1 rounded-xl min-w-fit w-full opacity-60"
+        >
+          <div
+            className={cn(
+              'w-9 h-9 flex items-center justify-center rounded-full',
+            )}
+          >
+            <ArrowLeft size={30} />
+          </div>
+        </Link>
+        <div className="pt-6">
+          <AnimatePresence mode="popLayout">
+            {Object.keys(usersMap).map((userId) => {
+              return (
                 <motion.div
                   {...fadeInOutMotion}
-                  key={user + index}
-                  className="flex items-center space-x-2"
+                  key={userId}
+                  className="flex items-center space-x-2 pl-9 text-ellipsis overflow-hidden max-w-[80%] "
                 >
-                  <Users />
-                  <p>{user}</p>
+                  {usersMap[userId].isDefaultAvatar ? (
+                    <DefaultAvatar avatar={usersMap[userId].avatar} />
+                  ) : (
+                    ''
+                  )}
+                  <p className="opacity-60">{usersMap[userId].nickname}</p>
                 </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+              )
+            })}
+          </AnimatePresence>
         </div>
+      </div>
+      <div className="relative grow h-[calc(100dvh-var(--header-height))] bg-chatground flex flex-col overflow-clip">
         <div
           ref={chatScroller}
-          className="relative grow h-screen overflow-y-scroll bg-chatground"
+          className="grow overflow-y-scroll scrollbar-hide"
         >
-          <div className="min-h-[calc(100%-52px-48px)] mt-4 pb-[52px]">
-            {messages.map(
-              ({ id, message, nickname, createdAt, font }, index) => (
-                <ChatBox
-                  sender={nickname}
-                  font={font}
-                  content={message}
-                  createdAt={createdAt}
-                  isMe={id === socket.id}
-                  key={id + index + createdAt}
-                />
-              ),
-            )}
-          </div>
-
-          <form
-            className="sticky bottom-[48px]"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
-            <Controller
-              control={form.control}
-              name="sentiment"
-              render={({ field }) => (
-                <div className="flex justify-around py-2">
-                  <SentimentsRadio
-                    sentiments={sentiments}
-                    onValueChange={(sentiment) => {
-                      field.onChange(sentiment.id)
-                    }}
-                  />
-                </div>
-              )}
-            />
-            <div className="relative  p-2 px-4 bg-transparent">
-              <Input
-                autoComplete="off"
-                onFocus={() => {
-                  setIsEdit(true)
+          <div className="py-8 px-9 flex items-center backdrop-blur-lg h-10 sticky bg-background/70 top-0 z-10">
+            <h2 className="text-2xl mr-12 font-extrabold">
+              {roomInfo?.roomName || '방이름 불러오는 중..'}
+            </h2>
+            <p className="flex items-center space-x-2 grow opacity-70">
+              <Users size={14} />
+              <span className="text-md">{users.length || 0}</span>
+            </p>
+            <div className="grow flex justify-end">
+              <RoomSetting
+                roomName={roomInfo?.roomName}
+                onSubmit={(data) => {
+                  socket.emit('ROOM_SETTING', data)
                 }}
-                className="pr-10 bg-chatbox-others-box"
-                {...form.register('message', {
-                  onChange(event) {
-                    if (event.target.value.length <= 0) {
-                      isEdit && setIsEdit(false)
-                    } else {
-                      !isEdit && setIsEdit(true)
-                    }
-                  },
-                  onBlur() {
-                    if (form.getValues().message.length <= 0) {
-                      setIsEdit(false)
-                    }
-                  },
-                  required: 'Message is required.',
-                })}
               />
-              <button
-                className="absolute right-6 top-1/2 -translate-y-1/2 hover:cursor-pointer"
-                type="submit"
-              >
-                <Send />
-              </button>
             </div>
-          </form>
+          </div>
+          {messages.map(({ id, message, createdAt, font, userId }, index) => (
+            <ChatBox
+              sender={usersMap[userId]}
+              font={font}
+              content={message}
+              createdAt={createdAt}
+              isMe={id === socket.id}
+              key={id + index + createdAt}
+            />
+          ))}
         </div>
-        <aside className="px-4">
-          <video autoPlay muted playsInline ref={videoRef}></video>
-        </aside>
-      </article>
+
+        <form
+          className="bg-chatground relative"
+          onSubmit={form.handleSubmit(onSubmit)}
+        >
+          <Controller
+            control={form.control}
+            name="sentiment"
+            render={({ field }) => (
+              <div className="flex justify-around py-2 absolute w-full -top-full bg-transparent h-full elevation-t duration-300">
+                <SentimentsRadio
+                  sentiments={sentiments}
+                  onValueChange={(sentiment) => {
+                    field.onChange(sentiment.id)
+                  }}
+                />
+              </div>
+            )}
+          />
+          <div className="relative  p-2 px-4 bg-transparent">
+            <Input
+              autoComplete="off"
+              onFocus={() => {
+                setIsEdit(true)
+              }}
+              className="pr-10 bg-chatbox-others-box"
+              {...form.register('message', {
+                onChange(event) {
+                  if (event.target.value.length <= 0) {
+                    isEdit && setIsEdit(false)
+                  } else {
+                    !isEdit && setIsEdit(true)
+                  }
+                },
+                onBlur() {
+                  if (form.getValues().message.length <= 0) {
+                    setIsEdit(false)
+                  }
+                },
+                required: 'Message is required.',
+              })}
+            />
+            <button
+              className="absolute right-6 top-1/2 -translate-y-1/2 hover:cursor-pointer"
+              type="submit"
+            >
+              <Send />
+            </button>
+          </div>
+        </form>
+      </div>
+      <FaceDetector
+        header={
+          info?.isDefaultAvatar ? (
+            <div className="flex items-center space-x-2 py-2 text-ellipsis overflow-hidden max-w-[80%]">
+              <DefaultAvatar avatar={info.avatar} />
+              <p className="opacity-60">{info.nickname}</p>
+            </div>
+          ) : (
+            ''
+          )
+        }
+        batchRunning={!isEdit}
+        onEmotionChange={(emotion) => {
+          emotionRef.current = emotion
+          socket.emit(
+            'GET_SENTIMENTS',
+            emotionRef.current.emotion,
+            (sentiments) => {
+              if (emotionRef.current.emotion === 'neutral') {
+                form.resetField('sentiment')
+              }
+              setSentiments(sentiments)
+            },
+          )
+        }}
+      />
     </>
   )
 }

@@ -1,10 +1,11 @@
+import { UserModel } from '@/db/models/user.model';
+import { InferSelectModel } from 'drizzle-orm';
 import { Socket as S } from 'socket.io';
 type Room = string;
 
 class SocketData {
-  id: string;
-  nickname: string;
-  roomName: string;
+  user: InferSelectModel<typeof UserModel>;
+  roomId: string;
 }
 
 export class Socket extends S<SocketOnEventMap> {
@@ -12,7 +13,7 @@ export class Socket extends S<SocketOnEventMap> {
 }
 
 export class SocketOnEventMap {
-  JOIN_ROOM: (roomName: string) => void;
+  JOIN_ROOM: (roomName: string) => Promise<Partial<SocketData>[]>;
   WELCOME: (userInfo: Socket['data']) => void;
   ROOM_CHANGE: (allRooms: Room[]) => void;
 }

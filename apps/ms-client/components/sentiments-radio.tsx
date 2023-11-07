@@ -13,7 +13,7 @@ const SentimentsRadio = ({
   return (
     <AnimatePresence mode="popLayout">
       {sentiments.map((sm) => (
-        <motion.div {...fadeInOutMotion} key={sm.id}>
+        <motion.div {...fadeInOutMotion} key={sm.id + sm.name}>
           <input
             className="peer hidden "
             name="sentiment"
@@ -26,7 +26,7 @@ const SentimentsRadio = ({
           />
           <label
             htmlFor={sm.id}
-            className="px-4 py-2 rounded-md border-2 border-muted-foreground bg-chatbox-others-box peer-checked:text-chatbox-me-box peer-checked:border-chatbox-me-box duration-300 whitespace-nowrap"
+            className="px-3 py-1 sm:px-4 sm:py-2 rounded-md border-2 border-muted-foreground bg-chatbox-others-box peer-checked:text-chatbox-me-box peer-checked:border-chatbox-me-box duration-300 whitespace-nowrap"
           >
             {sm.name}
           </label>

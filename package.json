@@ -1,5 +1,5 @@
 {
-  "name": "ms-messenger",
+  "name": "emochat",
   "type": "module",
   "version": "0.0.1",
   "private": true,
@@ -18,6 +18,6 @@
   },
   "dependencies": {
     "dotenv-cli": "^7.0.0"
-    },
-  "workspaces": ["apps/*"]
+  },
+  "workspaces": ["apps/*","packages/*"]
 }

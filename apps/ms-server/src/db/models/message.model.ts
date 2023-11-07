@@ -3,6 +3,7 @@ import { CoreModel } from './core.model';
 import { relations } from 'drizzle-orm';
 import { FontMappingModel } from './font-mapping.model';
 import { UserModel } from './user.model';
+import { ChatRoomModel } from './chat-room.model';
 
 export const MessageModel = pgTable('message', {
   ...CoreModel,
@@ -17,8 +18,8 @@ export const MessageModel = pgTable('message', {
   fearful: doublePrecision('fearful'),
   disgusted: doublePrecision('disgusted'),
   surprised: doublePrecision('surprised'),
-
   userId: uuid('userId').references(() => UserModel.id),
+  roomId: uuid('roomId').references(() => ChatRoomModel.id),
   fontToEmotionId: uuid('fontToEmotionId').references(
     () => FontMappingModel.id,
   ),
@@ -32,6 +33,10 @@ export const MessageModelRelations = relations(MessageModel, ({ one }) => ({
   userId: one(UserModel, {
     fields: [MessageModel.userId],
     references: [UserModel.id],
+  }),
+  roomId: one(ChatRoomModel, {
+    fields: [MessageModel.userId],
+    references: [ChatRoomModel.id],
   }),
 }));
 

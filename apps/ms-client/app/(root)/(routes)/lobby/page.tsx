@@ -1,10 +1,13 @@
+import Empty from '@/components/Empty'
 import LobbyScreen from '@/components/lobby'
 
 const Lobby = () => {
   return (
-    <section className="flex items-center justify-center h-full px-[20%]">
+    <>
+      <Empty />
       <LobbyScreen />
-    </section>
+      <Empty />
+    </>
   )
 }
 

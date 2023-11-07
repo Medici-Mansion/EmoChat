@@ -1,5 +1,5 @@
 {
-  "name": "ms-server",
+  "name": "@emochat/server",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -21,13 +21,13 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "generate": "drizzle-kit generate:pg",
     "push": "drizzle-kit push:pg",
-    "studio" : "drizzle-kit studio --port 4030",
+    "studio": "drizzle-kit studio --port 4030",
     "drizzle:seed": "bun seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
-    "@nestjs/event-emitter": "^2.0.2",
+    "@nestjs/event-emitter": "2.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.2.7",
     "@nestjs/websockets": "^10.2.7",

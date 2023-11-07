@@ -3,11 +3,13 @@ import { motion } from 'framer-motion'
 import { useCallback } from 'react'
 import { Label } from './ui/label'
 import { Font } from '@/socket'
+import { User } from '@/types'
+import DefaultAvatar from './default-avatar'
 
 type ChatBoxProps = {
   isMe: boolean
   content: string
-  sender: string
+  sender: User
   createdAt: Date
   font?: Font
 }
@@ -33,7 +35,7 @@ const ChatBox = ({ content, isMe, createdAt, font, sender }: ChatBoxProps) => {
     >
       {/* {isMe ? myIcon : senderIcon} */}
       <div className={cn('flex flex-col m-2 space-y-2', isMe && 'text-right')}>
-        <Label>{!isMe && sender}</Label>
+        <Label>{!isMe && sender?.nickname}</Label>
 
         <motion.div
           initial={{
@@ -60,10 +62,11 @@ const ChatBox = ({ content, isMe, createdAt, font, sender }: ChatBoxProps) => {
           </span>
           <div
             className={cn(
-              'rounded-md px-6 py-4 max-x-sm relative group text-2xl ',
+              'rounded-2xl px-6 py-4 max-x-sm relative group text-2xl ',
               isMe
-                ? 'origin-right bg-chatbox-me-box text-chatbox-me-text'
-                : 'origin-left bg-chatbox-others-box text-chatbox-others-text',
+                ? 'origin-right bg-chatbox-me-box text-chatbox-me-text rounded-br-sm'
+                : 'origin-left bg-chatbox-others-box text-chatbox-others-text rounded-bl-sm',
+              !font && 'text-xl',
             )}
             style={
               font
@@ -75,6 +78,11 @@ const ChatBox = ({ content, isMe, createdAt, font, sender }: ChatBoxProps) => {
           >
             {content}
           </div>
+          {!isMe && sender?.isDefaultAvatar ? (
+            <div className="pr-4">
+              <DefaultAvatar avatar={sender.avatar} />
+            </div>
+          ) : null}
         </motion.div>
       </div>
     </motion.div>

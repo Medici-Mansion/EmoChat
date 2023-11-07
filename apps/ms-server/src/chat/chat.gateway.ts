@@ -12,14 +12,14 @@ import {
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
 import { GetServerRoomDto } from '@/chat/dtos/room.dto';
-import { Logger } from '@nestjs/common';
+import { Logger, OnModuleInit } from '@nestjs/common';
 import { Socket } from '@/chat/types/socket.types';
 import { EditUserDto } from '@/users/users.dto';
 import { InferSelectModel } from 'drizzle-orm';
 import { SendMessageDto } from './dtos/message.dto';
-import { randomInt } from 'crypto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateMessageDto } from '@/messages/message.dto';
+import { ChatroomsService } from '@/chatrooms/chatrooms.service';
 
 @WebSocketGateway({
   cors: {
@@ -27,35 +27,58 @@ import { CreateMessageDto } from '@/messages/message.dto';
   },
   namespace: '/',
 })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit
+{
   constructor(
     private readonly usersService: UsersService,
     private readonly sentimentsService: SentimentsService,
+    private readonly chatRoomsService: ChatroomsService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
+  async onModuleInit() {
+    const rooms = await this.chatRoomsService.getChatRooms();
+    rooms.forEach((room) => {
+      this.roomInfo.set(room.id, room.roomName);
+    });
+  }
 
-  private roomInfo: Map<string, Set<string>> = new Map();
+  private roomInfo: Map<string, string> = new Map();
+
+  private roomGroupInfo = {
+    '9f8bbd24-9d98-4580-927f-15168791c121': 'Group A',
+    '42b8fb59-c78e-49ff-bfaa-685c590e73c0': 'Group B',
+    'c486c072-5900-4163-8fba-ffa3350a1680': 'Group C',
+    '487b239c-0435-4968-a423-573655a03dbf': 'Group D',
+    '265a5d3b-9dcd-4441-8925-206eb66172e9': 'Group E',
+    'd4152886-a972-496f-8fa7-727026d466e7': 'Group F',
+    '764a41c1-f25d-4cc1-a752-031059e16dd9': 'Group G',
+    '8dbb2e02-5987-4fc2-bab0-37a61881e905': 'Group H',
+    'dfaca612-1b67-4157-8187-2992725d08a9': 'Group I',
+    '8d828608-bf68-4927-b0b9-12144053728d': 'Group J',
+  };
 
   @WebSocketServer() private readonly io: Namespace;
   private readonly logger: Logger = new Logger(ChatGateway.name);
 
   @SubscribeMessage('JOIN_ROOM')
-  handleJoinRoom(
+  async handleJoinRoom(
     @ConnectedSocket()
     client: Socket,
-    @MessageBody() roomName: string,
+    @MessageBody() roomId: string,
   ) {
-    client.join(roomName);
-    const users = this.roomInfo.get(roomName);
-    if (!users) {
-      this.roomInfo.set(roomName, new Set([client.data.nickname]));
-    } else {
-      this.roomInfo.set(roomName, users.add(client.data.nickname));
-    }
-
-    client.data.roomName = roomName;
-    client.to(roomName).emit('WELCOME', client.data);
+    client.join(roomId);
+    client.data.roomId = roomId;
+    client.to(roomId).emit('WELCOME', client.data);
     this.serverRoomChange();
+    return this.getJoinedUser(roomId);
+  }
+
+  private async getJoinedUser(roomId: string) {
+    const sockets = await this.io.in(roomId).fetchSockets();
+    const users = sockets.map((socket) => socket.data) as Socket['data'][];
+    this.io.to(roomId).emit(`USERS:${roomId}`, users);
+    return users;
   }
 
   @SubscribeMessage('EXIT_ROOM')
@@ -69,7 +92,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() body: SendMessageDto,
   ) {
     const {
-      data: { roomName, nickname },
+      data: {
+        roomId,
+        user: { nickname },
+      },
     } = client;
     const { emotion, others, message, sentiment = null } = body;
 
@@ -81,18 +107,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const messageCreatedDto: CreateMessageDto = {
       emotionTitle: emotion,
       mappingId: font?.mappingId,
-      nickName: client.data.nickname,
-      room: decodeURIComponent(roomName),
+      nickName: client.data.user.nickname,
+      roomName: this.roomGroupInfo[client.data.roomId] || '',
+      roomId: decodeURIComponent(roomId),
       text: message,
       others,
     };
 
     this.eventEmitter.emit('message.created', messageCreatedDto);
 
-    this.io.server.to(roomName).emit('RESERVE_MESSAGE', {
+    this.io.server.to(roomId).emit('RESERVE_MESSAGE', {
       message,
       nickname,
       id: client.id,
+      userId: client.data.user.id,
       font,
     });
   }
@@ -100,10 +128,32 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('USER_SETTING')
   handleUserSetting(
     @ConnectedSocket() client: Socket,
-    @MessageBody() userSeetingParam: { nickname: string },
+    @MessageBody() userSettingParam: { nickname: string },
   ) {
-    this.editUserSetting(client, userSeetingParam);
+    this.editUserSetting(client, userSettingParam);
+    const {
+      data: { roomId },
+    } = client;
+    if (roomId) {
+      this.getJoinedUser(roomId);
+    }
+    this.io.to(client.id).emit('USER_SETTING', client.data.user);
     return client.data;
+  }
+
+  @SubscribeMessage('ROOM_SETTING')
+  handleRoomSetting(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() roomSettingParam: { roomName: string },
+  ) {
+    if (client.data.roomId && roomSettingParam?.roomName) {
+      this.chatRoomsService.updateRoomNameById({
+        roomId: client.data.roomId,
+        ...roomSettingParam,
+      });
+      this.roomInfo.set(client.data.roomId, roomSettingParam.roomName);
+      this.serverRoomChange();
+    }
   }
 
   // 유저가 첫 페이지 진입 시 회원조회 & 가입
@@ -113,21 +163,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() userKey?: string,
   ) {
     let user: InferSelectModel<typeof UserModel>;
+
     if (userKey) {
       user = await this.usersService.findUserdById(userKey);
-    }
+      client.data.user = user;
 
-    if (!userKey || !user) {
-      const {
-        data: { nickname },
-      } = client;
-      user = await this.usersService.createUser({ nickname });
+      this.serverRoomChange();
+      return user;
     }
-    client.data.nickname = user.nickname;
-    client.data.id = user.id;
-    this.serverRoomChange();
-
-    return user;
   }
 
   @SubscribeMessage('GET_SENTIMENTS')
@@ -141,8 +184,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleConnection(@ConnectedSocket() client: Socket) {
     this.logger.debug(`CONNECTED : ${client.id}`);
     this.logger.debug(`NAMESPACE : ${client.nsp.name}`);
-
-    client.data.nickname = '익명#' + randomInt(100000);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -152,58 +193,44 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private editUserSetting(client: Socket, editUserDto: EditUserDto) {
-    client.data.nickname = editUserDto.nickname as string;
-    return this.usersService.editUser({ ...editUserDto, id: client.data.id });
+    client.data.user.nickname = editUserDto.nickname as string;
+    return this.usersService.editUser({
+      ...editUserDto,
+      id: client.data.user.id,
+    });
   }
 
+  // 소켓데이터 유저 아바타 추가
   private exitRoom(client: Socket) {
     const {
-      data: { roomName, nickname },
+      data: { roomId, user: { nickname } = {} },
     } = client;
-    client.leave(roomName);
-    const users = this.roomInfo.get(roomName);
-    if (users) {
-      users.delete(client.data.nickname);
+    if (roomId) {
+      client.leave(roomId);
+      this.io.server.to(roomId).emit('USER_EXIT', nickname);
+      client.data.roomId = null;
+      client.rooms.clear();
+      this.getJoinedUser(roomId);
     }
-    this.roomInfo.set(roomName, users);
-    this.io.server.to(roomName).emit('USER_EXIT', nickname);
-    client.data.roomName = null;
-    client.rooms.clear();
     this.serverRoomChange();
   }
 
-  private serverRoomChange(roomChangeArgs?: Partial<GetServerRoomDto>) {
+  private async serverRoomChange(roomChangeArgs?: Partial<GetServerRoomDto>) {
     const { isEmit } = roomChangeArgs || { isEmit: true };
-    const {
-      adapter: { rooms, sids },
-    } = this.io.server.of('/');
-    const filteredRooms = Array.from(rooms.keys()).filter((key) => {
-      return sids.get(key) === undefined;
-    });
-    const roomObj: {
-      [key in string]: { name: string; count: number; users: Set<string> };
-    } = {};
-    filteredRooms.forEach((room) => {
-      const roomName = decodeURIComponent(room);
-      roomObj[roomName] = {
-        name: roomName,
-        count: rooms.get(room).size,
-        users: new Set(),
-      };
-    });
-    this.io.sockets.forEach((socket) => {
-      if (socket.data.roomName) {
-        roomObj[socket.data.roomName].users.add(socket.data.nickname);
-      }
-    });
 
-    const AllRooms = Object.keys(roomObj).map((roomName) => {
-      roomObj[roomName].users = [...roomObj[roomName].users].reverse() as any;
-      return roomObj[roomName];
-    });
-    if (isEmit) {
-      this.io.server.emit('ROOM_CHANGE', AllRooms);
+    const response = [];
+    const keys = this.roomInfo.keys();
+    while (true) {
+      const { value, done } = keys.next();
+      if (done) break;
+      const temp = {};
+      temp['roomId'] = value;
+      temp['roomName'] = this.roomInfo.get(value);
+      response.push(temp);
     }
-    return AllRooms;
+    if (isEmit) {
+      this.io.server.emit('ROOM_CHANGE', response);
+    }
+    return response;
   }
 }

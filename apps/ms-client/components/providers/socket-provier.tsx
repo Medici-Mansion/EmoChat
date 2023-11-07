@@ -1,6 +1,7 @@
 'use client'
 
 import { Manager } from '@/lib/Manager'
+import { RoomInfoUser } from '@/socket'
 import {
   createContext,
   Dispatch,
@@ -10,15 +11,10 @@ import {
   useState,
 } from 'react'
 
-interface SocketData {
-  id: string
-  nickname: string
-}
-
 export const SocketContext = createContext<{
-  info: SocketData | null
+  info: RoomInfoUser['user'] | null
   manager: Manager
-  setInfo: Dispatch<SetStateAction<SocketData | null>> | null
+  setInfo: Dispatch<SetStateAction<RoomInfoUser['user'] | null>> | null
 }>({
   manager: new Manager(process.env.NEXT_PUBLIC_SITE_URL, {
     transports: ['websocket'],
@@ -35,7 +31,7 @@ const SocketProvider = ({ children }: PropsWithChildren) => {
     }),
   ).current
 
-  const [info, setInfo] = useState<SocketData | null>(null)
+  const [info, setInfo] = useState<RoomInfoUser['user'] | null>(null)
   return (
     <SocketContext.Provider value={{ manager, info, setInfo }}>
       {children}

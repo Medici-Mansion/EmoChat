@@ -1,16 +1,19 @@
 'use client'
 import { SocketContext } from '@/components/providers/socket-provier'
-import { Room } from '@/socket'
+import { USER_UNIQUE_KEY } from '@/constants'
+import { RoomInfo } from '@/socket'
+import { User } from '@/types'
 import { useEffect, useRef, useState } from 'react'
 import { useContext } from 'react'
-import { Socket } from 'socket.io-client'
+import { SocketClient } from 'socket.io-client'
 
 interface useSocketProps {
   nsp: string
-  onConnect?: (socket: Socket) => void
-  onUnmounted?: (socket: Socket) => void
-  onMounted?: (socket: Socket) => void
-  onRoomChanged?: (rooms: Room[]) => void
+  onConnect?: (socket: SocketClient) => void
+  onUnmounted?: (socket: SocketClient) => void
+  onMounted?: (socket: SocketClient) => void
+  onRoomChanged?: (rooms: RoomInfo[]) => void
+  onUserUpdated?: (user: User) => void
 }
 
 const useSocket = ({
@@ -19,6 +22,7 @@ const useSocket = ({
   onUnmounted,
   onMounted,
   onRoomChanged,
+  onUserUpdated,
 }: useSocketProps) => {
   const { manager } = useContext(SocketContext) || {}
   if (!manager) {
@@ -26,7 +30,7 @@ const useSocket = ({
   }
 
   const [isError, setIsError] = useState<string | null>(null)
-  const socket = useRef<Socket>(manager.create_socket(nsp)).current
+  const socket = useRef(manager.create_socket(nsp)).current
 
   useEffect(() => {
     if (socket && typeof window !== 'undefined') {
@@ -38,18 +42,36 @@ const useSocket = ({
           setIsError(message)
         }
       })
-      socket.listen('connect', () => {
+      socket.on('connect', () => {
+        socket.emit(
+          'USER_JOIN',
+          localStorage.getItem(USER_UNIQUE_KEY),
+          (user) => {
+            localStorage.setItem(USER_UNIQUE_KEY, user.id)
+            if (user) {
+              onUserUpdated && onUserUpdated(user)
+            }
+          },
+        )
         if (isError) {
           setIsError(null)
         }
         onConnect && onConnect(socket)
       })
-      socket.on('ROOM_CHANGE', (rooms) => {
+
+      socket.listen('ROOM_CHANGE', (rooms) => {
         if (isError) {
           setIsError(null)
         }
         onRoomChanged && onRoomChanged(rooms)
       })
+      socket.listen('disconnect', () => {
+        console.log('HOOK DISCONNECTED')
+      })
+    }
+
+    return () => {
+      socket.off('connect')
     }
   }, [isError, onConnect, onRoomChanged, socket])
   useEffect(() => {
