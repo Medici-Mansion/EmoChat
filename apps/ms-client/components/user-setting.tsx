@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import {
   DropdownMenu,
@@ -12,14 +6,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import {
-  Form,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { useForm } from 'react-hook-form'
 import useSocket from '@/hooks/use-socket'
 import { SocketContext } from './providers/socket-provier'
@@ -34,7 +21,7 @@ import Image from 'next/image'
 
 const formschema = z.object({
   nickname: z.string(),
-  profile: z.string(),
+  avatar: z.string(),
 })
 
 type UserSettingParams = z.infer<typeof formschema>
@@ -55,8 +42,8 @@ const images: Images[] = [
 
 const UserSetting = () => {
   const [open, setOpen] = useState(false)
-  const [activeId, setActiveId] = useState(0)
   const { info, setInfo } = useContext(SocketContext)
+  const [activeId, setActiveId] = useState(info?.avatar || '0')
 
   const { socket } = useSocket({
     nsp: '/',
@@ -74,16 +61,8 @@ const UserSetting = () => {
 
   const onSubmit = (data: UserSettingParams) => {
     socket.emit('USER_SETTING', data)
+    setOpen(false)
   }
-
-  useEffect(() => {
-    socket.on('USER_SETTING', (user) => {
-      setInfo?.(user)
-    })
-    return () => {
-      socket.off('USER_SETTING')
-    }
-  }, [setInfo, socket])
 
   useEffect(() => {
     socket.on('USER_SETTING', (user) => {
@@ -97,8 +76,10 @@ const UserSetting = () => {
   useEffect(() => {
     if (open) {
       form.setValue('nickname', info?.nickname || '')
+      form.setValue('avatar', info?.avatar || '')
+      setActiveId(info?.avatar || '')
     }
-  }, [form, info?.nickname, open, socket])
+  }, [form, info, open, socket])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -136,7 +117,7 @@ const UserSetting = () => {
             />
             <FormField
               control={form.control}
-              name="profile"
+              name="avatar"
               render={({ field }) => (
                 <FormItem>
                   <div className="space-y-2">
@@ -155,13 +136,13 @@ const UserSetting = () => {
                             fill
                             className={cn(
                               'aspect-square border p-2 rounded-lg ',
-                              activeId === img.id
+                              activeId === img.value
                                 ? 'border-[#0C8AFF] border-2 duration-300'
                                 : 'opacity-50',
                             )}
                             onClick={() => {
-                              setActiveId(img.id)
-                              form.setValue('profile', img.value)
+                              setActiveId(img.value)
+                              form.setValue('avatar', img.value)
                             }}
                           />
                         </div>
