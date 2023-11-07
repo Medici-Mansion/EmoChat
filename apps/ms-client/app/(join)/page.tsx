@@ -64,11 +64,11 @@ const JoinPage = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6 sm:max-h-[50dvh] justify-center flex flex-col h-full"
         >
-          <div className="flex flex-col space-y-2 justify-center items-center">
+          <div className="flex flex-col space-y-4 justify-center items-center">
             <div className="w-12 h-12 relative">
               <Image src="/images/logo.png" alt="logo" fill />
             </div>
-            <h1 className="font-extrabold text-4xl">EmoChat</h1>
+            <h1 className="logo text-4xl">EmoChat</h1>
           </div>
           <FormField
             control={form.control}

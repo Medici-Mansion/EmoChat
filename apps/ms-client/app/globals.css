@@ -137,7 +137,6 @@
   }
   .elevation-t {
     position: relative;
-    
   }
   .elevation-t::before {
     @apply bg-gradient-to-t !from-chatground !to-chatground/0;
@@ -145,11 +144,15 @@
     position: absolute;
     height: 100%;
     width: 100%;
-    top:100%;
+    top: 100%;
     transition: top 0.5s ease-in-out;
   }
   .scrolling.elevation-t::before {
-    top: 0
+    top: 0;
+  }
+
+  .logo {
+    @apply font-logo font-extrabold;
   }
 }
 

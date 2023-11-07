@@ -2,6 +2,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Black+And+White+Picture&family=East+Sea+Dokdo&family=Nanum+Brush+Script&family=Single+Day&display=swap');
 
 @font-face {
+  font-family: 'SBAggroB';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroB.woff')
+    format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
   font-family: 'BMEuljiro10yearslater';
   src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10-21@1.0/BMEuljiro10yearslater.woff')
     format('woff');
