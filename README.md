@@ -1,15 +1,4 @@
 # ms-messenger
 
-To install dependencies:
-
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.0.5. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+## branch strategy
+![Frame 2](https://github.com/Medici-Mansion/EmoChat/assets/73725736/f5beda3e-6865-4414-b099-cb24fd863cc9)

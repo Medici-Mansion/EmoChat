@@ -53,7 +53,6 @@ const UserSetting = () => {
   const [open, setOpen] = useState(false)
   const { info, setInfo } = useContext(SocketContext)
   const [activeId, setActiveId] = useState(info?.avatar || '0')
-
   const { socket } = useSocket({
     nsp: '/',
     onUserUpdated(user) {
