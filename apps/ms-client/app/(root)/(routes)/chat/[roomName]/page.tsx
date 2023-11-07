@@ -222,7 +222,7 @@ const RoomPage = ({
             control={form.control}
             name="sentiment"
             render={({ field }) => (
-              <div className="flex justify-around py-2 absolute w-full -top-full bg-transparent h-full elevation-t duration-300">
+              <div className="flex justify-around py-2 w-full h-fit elevation-t relative duration-300">
                 <SentimentsRadio
                   sentiments={sentiments}
                   onValueChange={(sentiment) => {
