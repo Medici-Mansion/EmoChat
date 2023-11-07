@@ -1,13 +1,11 @@
-import React, { useCallback, useContext, useState } from 'react'
-import { User as UserIcon, X } from 'lucide-react'
-import { useForm } from 'react-hook-form'
-import Image from 'next/image'
 
-import { cn } from '@/lib/utils'
-import { SocketContext } from './providers/socket-provier'
-import useSocket from '@/hooks/use-socket'
-import { USER_UNIQUE_KEY } from '@/constants'
-import { User } from '@/types'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 import {
   DropdownMenu,
@@ -15,15 +13,30 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from './ui/label'
 
-interface UserSettingParams {
-  nickname: string
-  profile: string
-}
+import {
+  Form,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { useForm } from 'react-hook-form'
+import useSocket from '@/hooks/use-socket'
+import { SocketContext } from './providers/socket-provier'
+import { Input } from '@/components/ui/input'
+import { Button } from './ui/button'
+import { User as UserIcon } from 'lucide-react'
+import * as z from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+const formschema = z.object({
+  nickname: z.string(),
+})
+
+type UserSettingParams = z.infer<typeof formschema>
+
 
 interface Images {
   id: number
@@ -69,6 +82,21 @@ const UserSetting = () => {
       open && setOpen(false)
     })
   }
+
+  useEffect(() => {
+    socket.on('USER_SETTING', (user) => {
+      setInfo?.(user)
+    })
+    return () => {
+      socket.off('USER_SETTING')
+    }
+  }, [setInfo, socket])
+
+  useEffect(() => {
+    if (open) {
+      form.setValue('nickname', info?.nickname || '')
+    }
+  }, [form, info?.nickname, open, socket])
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>

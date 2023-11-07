@@ -5,9 +5,7 @@ const Lobby = () => {
   return (
     <>
       <Empty />
-      <div className="flex w-full items-center justify-center">
-        <LobbyScreen />
-      </div>
+      <LobbyScreen />
       <Empty />
     </>
   )

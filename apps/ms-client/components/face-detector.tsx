@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { ReactNode, useCallback, useEffect, useRef } from 'react'
 import * as faceapi from 'face-api.js'
 import { Emotion } from '@/types'
 
@@ -7,9 +7,11 @@ interface FaceDetectorProps {
   intervalTime?: number
   batchRunning?: boolean
   onEmotionChange?: (emotion: Emotion) => void
+  header?: ReactNode
 }
 
 const FaceDetector = ({
+  header,
   intervalTime = 500,
   batchRunning = true,
   onEmotionChange,
@@ -124,13 +126,16 @@ const FaceDetector = ({
 
   return (
     <aside className="invisible w-0 p-3 sm:visible sm:w-full px-0 sm:px-4">
-      <video
-        autoPlay
-        muted
-        playsInline
-        ref={videoRef}
-        className="rounded-2xl"
-      ></video>
+      <div className="w-fit mx-auto">
+        {header}
+        <video
+          autoPlay
+          muted
+          playsInline
+          ref={videoRef}
+          className="rounded-2xl"
+        ></video>
+      </div>
     </aside>
   )
 }

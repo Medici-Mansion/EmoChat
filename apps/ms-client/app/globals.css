@@ -24,7 +24,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
 
-    --primary: 24 9.8% 10%;
+    /* --primary: 24 9.8% 10%; */
+    --primary: 209 100% 52%;
     --primary-foreground: 60 9.1% 97.8%;
 
     --secondary: 60 4.8% 95.9%;
@@ -83,7 +84,7 @@
   }
 
   .dark {
-    --background: #000000;
+    --background: 0 0% 0%;
     --foreground: 60 9.1% 97.8%;
 
     --disabled: #667085;
@@ -132,18 +133,26 @@
 
 @layer components {
   .pc-main-grid {
-    @apply flex grid-cols-[minmax(min-content,1fr)_3fr_minmax(min-content,1fr)] sm:grid;
+    @apply flex grid-cols-[minmax(10dvw,20dvw)_3fr_minmax(10dvw,20dvw)] sm:grid;
   }
   .elevation-t {
     position: relative;
   }
   .elevation-t::before {
+    @apply bg-gradient-to-t !from-chatground !to-chatground/0;
     content: '';
     position: absolute;
-    height: 2rem;
+    height: 100%;
     width: 100%;
-    top: -2rem;
-    @apply bg-gradient-to-t from-chatground to-chatground/0;
+    top: 100%;
+    transition: top 0.5s ease-in-out;
+  }
+  .scrolling.elevation-t::before {
+    top: 0;
+  }
+
+  .logo {
+    @apply font-logo font-extrabold;
   }
 }
 
