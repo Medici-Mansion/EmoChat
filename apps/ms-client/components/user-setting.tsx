@@ -1,4 +1,3 @@
-
 import React, {
   useCallback,
   useContext,
@@ -13,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-
 import {
   Form,
   FormDescription,
@@ -27,16 +25,19 @@ import useSocket from '@/hooks/use-socket'
 import { SocketContext } from './providers/socket-provier'
 import { Input } from '@/components/ui/input'
 import { Button } from './ui/button'
-import { User as UserIcon } from 'lucide-react'
+import { User as UserIcon, X } from 'lucide-react'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { cn } from '@/lib/utils'
+import { Label } from './ui/label'
+import Image from 'next/image'
 
 const formschema = z.object({
   nickname: z.string(),
+  profile: z.string(),
 })
 
 type UserSettingParams = z.infer<typeof formschema>
-
 
 interface Images {
   id: number
@@ -55,33 +56,34 @@ const images: Images[] = [
 const UserSetting = () => {
   const [open, setOpen] = useState(false)
   const [activeId, setActiveId] = useState(0)
-  const { setInfo } = useContext(SocketContext)
+  const { info, setInfo } = useContext(SocketContext)
 
   const { socket } = useSocket({
     nsp: '/',
     onUserUpdated(user) {
-      setNickname(user.nickname, user.profile)
+      setInfo?.(user)
     },
   })
 
-  const form = useForm<UserSettingParams>()
-
-  const setNickname = useCallback(
-    (nickname: string, profile: string) => {
-      setInfo?.({ id: socket.id, nickname: nickname, profile: profile })
-      form.setValue('nickname', nickname)
-      form.setValue('profile', profile)
+  const form = useForm<UserSettingParams>({
+    defaultValues: {
+      nickname: '',
     },
-    [form, setInfo, socket.id],
-  )
+    resolver: zodResolver(formschema),
+  })
 
   const onSubmit = (data: UserSettingParams) => {
-    // TYPE_ALIAS : data => client.data
-    socket.emit('USER_SETTING', data, (data: UserSettingParams) => {
-      setNickname(data.nickname, data.profile)
-      open && setOpen(false)
-    })
+    socket.emit('USER_SETTING', data)
   }
+
+  useEffect(() => {
+    socket.on('USER_SETTING', (user) => {
+      setInfo?.(user)
+    })
+    return () => {
+      socket.off('USER_SETTING')
+    }
+  }, [setInfo, socket])
 
   useEffect(() => {
     socket.on('USER_SETTING', (user) => {
