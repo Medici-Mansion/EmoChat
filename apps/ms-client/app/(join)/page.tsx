@@ -65,79 +65,86 @@ const JoinPage = () => {
           className="space-y-6 sm:max-h-[50dvh] justify-center flex flex-col h-full"
         >
           <div className="flex flex-col space-y-4 justify-center items-center">
+          <div className="flex flex-col space-y-2 justify-center items-center pb-2">
             <div className="w-12 h-12 relative">
               <Image src="/images/logo.png" alt="logo" fill />
             </div>
             <h1 className="logo text-4xl">EmoChat</h1>
           </div>
-          <FormField
-            control={form.control}
-            name="nickname"
-            render={({ field }) => (
-              <FormItem>
-                <Label>이름</Label>
-                <FormControl>
-                  <Input
-                    {...field}
-                    disabled={isLoading}
-                    placeholder="이름을 입력해주세요."
-                    className="text-lg py-6"
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="avatar"
-            render={({ field }) => (
-              <FormItem>
-                <Label>프로필 사진</Label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[0, 1, 2, 3].map((item) => (
-                    <label
-                      key={item}
-                      htmlFor={item + ''}
-                      aria-disabled={isLoading}
-                      className={cn(
-                        'aspect-square border relative duration-300 rounded-lg',
-                        isLoading ||
-                          (isAvatarSelected && isAvatarSelected !== item + '')
-                          ? 'opacity-50'
-                          : '',
-                      )}
-                    >
-                      <Image
-                        src={`/images/avatar/${item}.png`}
-                        alt="avatar"
-                        fill
-                        className="p-2.5"
-                      />
+          <div className="pt-6">
+            <FormField
+              control={form.control}
+              name="nickname"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>이름</Label>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={isLoading}
+                      placeholder="이름을 입력해주세요."
+                      className="text-lg py-6"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="pt-8">
+            <FormField
+              control={form.control}
+              name="avatar"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>프로필 사진</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[0, 1, 2, 3].map((item) => (
+                      <label
+                        key={item}
+                        htmlFor={item + ''}
+                        aria-disabled={isLoading}
+                        className={cn(
+                          'aspect-square border relative duration-300 rounded-lg border-[#D0D5DD]',
+                          isLoading ||
+                            (isAvatarSelected && isAvatarSelected !== item + '')
+                            ? 'opacity-50'
+                            : isAvatarSelected && 'border-[#0C8AFF] border-2',
+                        )}
+                      >
+                        <Image
+                          src={`/images/avatar/${item}.png`}
+                          alt="avatar"
+                          fill
+                          className="p-4"
+                        />
 
-                      <Input
-                        disabled={isLoading}
-                        type="radio"
-                        name={field.name}
-                        value={item + ''}
-                        id={item + ''}
-                        className="hidden"
-                        onChange={(event) => field.onChange(event)}
-                      />
-                    </label>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button
-            disabled={!form.formState.isValid || isLoading}
-            variant="submit"
-            type="submit"
-            className="w-full py-6"
-          >
-            시작하기
-          </Button>
+                        <Input
+                          disabled={isLoading}
+                          type="radio"
+                          name={field.name}
+                          value={item + ''}
+                          id={item + ''}
+                          className="hidden"
+                          onChange={(event) => field.onChange(event)}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="pt-20">
+            <Button
+              disabled={!form.formState.isValid || isLoading}
+              variant="submit"
+              type="submit"
+              className="w-full py-6"
+            >
+              시작하기
+            </Button>
+          </div>
         </form>
       </Form>
     </div>
