@@ -36,7 +36,7 @@ const Modal = ({ isOpen, modalHandler }: ModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={modalHandler}>
-      <DialogContent className="dark:bg-[#10171C]">
+      <DialogContent className="dark:bg-[#10171C] sm:max-h-[80dvh] max-h-[100dvh] overflow-y-scroll">
         <DialogTitle className="text-[#0C8AFF] text-[16px] px-2">
           표정 가이드
         </DialogTitle>
@@ -47,7 +47,7 @@ const Modal = ({ isOpen, modalHandler }: ModalProps) => {
           <br />
           6가지 감정이 인식되면 다양한 서체가 적용되니 자유롭게 활용해보세요!
         </DialogDescription>
-        <div className="w-full grid grid-cols-3 gap-y-8 gap-x-5 py-2">
+        <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-y-8 gap-x-5 py-2">
           {faces.map((item) => (
             <div
               key={item.title}
@@ -62,7 +62,9 @@ const Modal = ({ isOpen, modalHandler }: ModalProps) => {
                 height={'200'}
                 alt="faceImage"
               />
-              <div className="dark:text-white">{item.info}</div>
+              <div className="text-[14px] sm:text-[16px] dark:text-white">
+                {item.info}
+              </div>
             </div>
           ))}
         </div>
