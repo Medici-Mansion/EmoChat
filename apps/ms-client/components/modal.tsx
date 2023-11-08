@@ -65,6 +65,7 @@ const Modal = ({ isOpen, modalHandler }: ModalProps) => {
               <div className="text-[14px] sm:text-[16px] dark:text-white">
                 {item.info}
               </div>
+
             </div>
           ))}
         </div>
