@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import * as faceapi from 'face-api.js'
-import { ArrowLeft, Send, Users } from 'lucide-react'
+import { ArrowLeft, RotateCw, Send, Users } from 'lucide-react'
 import React, {
   useCallback,
   useContext,
@@ -14,7 +14,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { AnimatePresence, motion } from 'framer-motion'
 
 import { ReservedMessage, RoomInfo, RoomInfoUser } from '@/socket'
-import { Sentiment, User, WithParam } from '@/types'
+import { Emotion, Sentiment, User, WithParam } from '@/types'
 import { cn } from '@/lib/utils'
 import { fadeInOutMotion } from '@/motions'
 
@@ -27,6 +27,7 @@ import FaceDetector from '@/components/face-detector'
 import RoomSetting from '@/components/room-setting'
 import DefaultAvatar from '@/components/default-avatar'
 import { SocketContext } from '@/components/providers/socket-provier'
+import AnimatedRefresh from '@/components/animate-refresh'
 
 interface RoomFormValue {
   message: string
@@ -131,6 +132,23 @@ const RoomPage = ({
     }, 1000)
   }
 
+  const onEmotionChange = useCallback(
+    (emotion: Emotion) => {
+      emotionRef.current = emotion
+      socket.emit(
+        'GET_SENTIMENTS',
+        emotionRef.current.emotion,
+        (sentiments) => {
+          if (emotionRef.current.emotion === 'neutral') {
+            form.resetField('sentiment')
+          }
+          setSentiments(sentiments)
+        },
+      )
+    },
+    [form, socket],
+  )
+
   useEffect(() => {
     const ref = chatScroller.current
     if (ref) {
@@ -193,7 +211,15 @@ const RoomPage = ({
               <Users size={14} />
               <span className="text-md">{users.length || 0}</span>
             </p>
-            <div className="grow flex justify-end">
+            <div className="grow flex justify-end space-x-4">
+              <AnimatedRefresh
+                className="sm:hidden shadow-none flex items-center border-none hover:bg-transparent bg-transparent"
+                onClick={() => {
+                  onEmotionChange({
+                    emotion: 'neutral',
+                  })
+                }}
+              />
               <RoomSetting
                 roomName={roomInfo?.roomName}
                 onSubmit={(data) => {
@@ -276,19 +302,7 @@ const RoomPage = ({
           )
         }
         batchRunning={!isEdit}
-        onEmotionChange={(emotion) => {
-          emotionRef.current = emotion
-          socket.emit(
-            'GET_SENTIMENTS',
-            emotionRef.current.emotion,
-            (sentiments) => {
-              if (emotionRef.current.emotion === 'neutral') {
-                form.resetField('sentiment')
-              }
-              setSentiments(sentiments)
-            },
-          )
-        }}
+        onEmotionChange={onEmotionChange}
       />
     </>
   )
