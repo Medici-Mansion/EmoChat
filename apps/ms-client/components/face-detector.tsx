@@ -1,7 +1,17 @@
 'use client'
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react'
+import { RotateCw } from 'lucide-react'
 import * as faceapi from 'face-api.js'
+import { motion, useAnimation } from 'framer-motion'
 import { Emotion } from '@/types'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import AnimatedRefresh from '@/components/animate-refresh'
 
 interface FaceDetectorProps {
   intervalTime?: number
@@ -21,6 +31,8 @@ const FaceDetector = ({
   const checkCnt = useRef<number>(0)
   const timer = useRef<NodeJS.Timeout>()
 
+  const control = useAnimation()
+
   const emotionRef = useRef<{
     emotion: string
     others?: faceapi.FaceExpressions
@@ -30,7 +42,7 @@ const FaceDetector = ({
 
   const startStream = useCallback(async () => {
     if (typeof window === 'undefined') return
-    Promise.all([
+    await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
       faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
       faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
@@ -136,6 +148,23 @@ const FaceDetector = ({
           className="rounded-2xl"
         ></video>
       </div>
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger className="absolute bottom-1.5 hidden sm:block">
+            <AnimatedRefresh
+              onClick={() => {
+                onEmotionChange &&
+                  onEmotionChange({
+                    emotion: 'neutral',
+                  })
+              }}
+            />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>내 감정 초기화 하기</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </aside>
   )
 }
