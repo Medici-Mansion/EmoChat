@@ -213,7 +213,7 @@ const RoomPage = ({
             </p>
             <div className="grow flex justify-end space-x-4">
               <AnimatedRefresh
-                className="block sm:hidden border-none hover:bg-transparent bg-transparent"
+                className="sm:hidden shadow-none flex items-center border-none hover:bg-transparent bg-transparent"
                 onClick={() => {
                   onEmotionChange({
                     emotion: 'neutral',
