@@ -143,7 +143,6 @@
     @apply bg-chatground
   }
   .elevation-t::before {
-    @apply bg-gradient-to-t !from-chatground !to-chatground/0;
     content: '';
     height: 0%;
     top: 0%;
