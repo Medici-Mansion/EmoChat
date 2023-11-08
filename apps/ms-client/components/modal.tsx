@@ -36,7 +36,7 @@ const Modal = ({ isOpen, modalHandler }: ModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={modalHandler}>
-      <DialogContent className="dark:bg-[#10171C] h-full overflow-y-scroll sm:h-fit">
+      <DialogContent className="dark:bg-[#10171C] sm:max-h-[80dvh] max-h-[100dvh] overflow-y-scroll">
         <DialogTitle className="text-[#0C8AFF] text-[16px] px-2">
           표정 가이드
         </DialogTitle>
