@@ -1,12 +1,15 @@
 'use client'
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ModeToggle } from './mode-toggle'
 import UserSetting from './user-setting'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Info } from 'lucide-react'
+import Modal from './modal'
 
 const Header = () => {
   const headerRef = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState(false)
 
   const onResize = useCallback(() => {
     if (headerRef.current) {
@@ -17,6 +20,10 @@ const Header = () => {
       )
     }
   }, [])
+
+  const modalHandler = () => {
+    setOpen((prev) => !prev)
+  }
 
   useEffect(() => {
     window.addEventListener('resize', onResize)
@@ -56,10 +63,12 @@ const Header = () => {
         <h1 className="logo text-xl">EmoChat</h1>
       </div>
       <div className="flex items-center space-x-4">
+        <Info onClick={() => setOpen(true)} className="cursor-pointer" />
         <UserSetting />
         {/* <CreateRoomForm /> */}
         <ModeToggle />
       </div>
+      <Modal modalHandler={modalHandler} isOpen={open} />
     </div>
   )
 }
