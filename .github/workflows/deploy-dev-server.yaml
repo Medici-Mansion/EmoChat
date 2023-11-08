@@ -1,4 +1,4 @@
-name: "[DEV] [CLIENT] Deploy to cloudtype"
+name: "[DEV] [SERVER] Deploy to cloudtype"
 on:
   push:
     branches:
@@ -21,18 +21,30 @@ jobs:
           project: raymondanythings/ms-messenger
           stage: dev
           yaml: |
-            name: emochat-client-dev
-            app: node@16
+            name: emochat-server-dev
+            app: node@18
             options:
               env:
                 - name: NODE_ENV
                   value: production
-                - name: NEXT_PUBLIC_SITE_URL
-                  secret: NEXT_PUBLIC_SITE_URL
-              ports: 3000
+                - name: CLIENT_URL
+                  secret: CLIENT_URL
+                - name: DB_HOST
+                  secret: DB_HOST
+                - name: DB_NAME
+                  secret: DB_NAME
+                - name: DB_PORT
+                  secret: DB_PORT
+                - name: DB_PWD
+                  secret: DB_PWD
+                - name: DB_USER
+                  secret: DB_USER
+              ports: "4000"
+              install: yarn
               build: yarn build
+              start: yarn start:prod
             context:
               git:
                 url: git@github.com:${{ github.repository }}.git
                 ref: ${{ github.ref }}
-                path: apps/ms-client
+                path: apps/ms-server
