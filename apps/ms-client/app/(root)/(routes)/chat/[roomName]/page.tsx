@@ -241,7 +241,7 @@ const RoomPage = ({
         </div>
 
         <form
-          className="bg-chatground relative"
+          className="bg-chatground relative pt-2 pb-6"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <Controller
@@ -258,7 +258,7 @@ const RoomPage = ({
               </div>
             )}
           />
-          <div className="relative  p-2 px-4 bg-transparent">
+          <div className="relative px-4  bg-transparent">
             <Input
               autoComplete="off"
               onFocus={() => {

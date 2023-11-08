@@ -35,7 +35,7 @@ const ChatBox = ({ content, isMe, createdAt, font, sender }: ChatBoxProps) => {
     >
       {/* {isMe ? myIcon : senderIcon} */}
       <div
-        className={cn('flex flex-col space-y-2', isMe ? 'text-right' : 'm-2')}
+        className={cn('flex flex-col space-y-3', isMe ? 'text-right' : 'm-2')}
       >
         <Label>{!isMe && sender?.nickname}</Label>
 

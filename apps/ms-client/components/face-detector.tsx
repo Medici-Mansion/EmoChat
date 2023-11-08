@@ -150,7 +150,7 @@ const FaceDetector = ({
       </div>
       <TooltipProvider delayDuration={0}>
         <Tooltip>
-          <TooltipTrigger className="absolute bottom-1.5 hidden sm:block">
+          <TooltipTrigger className="absolute bottom-6 hidden sm:block">
             <AnimatedRefresh
               onClick={() => {
                 onEmotionChange &&
