@@ -14,7 +14,6 @@ import { Namespace } from 'socket.io';
 import { GetServerRoomDto } from '@/chat/dtos/room.dto';
 import { Logger, OnModuleInit } from '@nestjs/common';
 import { Socket } from '@/chat/types/socket.types';
-import { EditUserDto } from '@/users/users.dto';
 import { InferSelectModel } from 'drizzle-orm';
 import { SendMessageDto } from './dtos/message.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -128,7 +127,7 @@ export class ChatGateway
   @SubscribeMessage('USER_SETTING')
   handleUserSetting(
     @ConnectedSocket() client: Socket,
-    @MessageBody() userSettingParam: { nickname: string },
+    @MessageBody() userSettingParam: { nickname: string; avatar: string },
   ) {
     this.editUserSetting(client, userSettingParam);
     const {
@@ -137,7 +136,7 @@ export class ChatGateway
     if (roomId) {
       this.getJoinedUser(roomId);
     }
-    this.io.to(client.id).emit('USER_SETTING', client.data.user);
+    client.emit('USER_SETTING' as any, client.data.user);
     return client.data;
   }
 
@@ -192,8 +191,12 @@ export class ChatGateway
     this.io.server.of('/').adapter.del(client.id, client.id);
   }
 
-  private editUserSetting(client: Socket, editUserDto: EditUserDto) {
+  private editUserSetting(
+    client: Socket,
+    editUserDto: { nickname: string; avatar: string },
+  ) {
     client.data.user.nickname = editUserDto.nickname as string;
+    client.data.user.avatar = editUserDto.avatar as string;
     return this.usersService.editUser({
       ...editUserDto,
       id: client.data.user.id,

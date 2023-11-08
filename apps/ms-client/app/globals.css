@@ -10,9 +10,11 @@
 
     --disabled: #667085;
 
+    --submit: 12 138 255;
+
     --chatground: 239 240 242;
 
-    --chatbox-me-box: #1b72c0;
+    --chatbox-me-box: #0c8aff;
     --chatbox-me-text: #ffffff;
 
     --chatbox-others-box: #ffffff;
@@ -137,18 +139,24 @@
   }
   .elevation-t {
     position: relative;
+    z-index: 2;
+    @apply bg-chatground
   }
   .elevation-t::before {
     @apply bg-gradient-to-t !from-chatground !to-chatground/0;
     content: '';
+    height: 0%;
+    top: 0%;
     position: absolute;
+    transition: all 0.5s ease-in-out;
+  }
+    .scrolling.elevation-t::before {
+    top: -100%;
+    @apply bg-gradient-to-t !from-chatground !to-chatground/0;
     height: 100%;
     width: 100%;
-    top: 100%;
-    transition: top 0.5s ease-in-out;
-  }
-  .scrolling.elevation-t::before {
-    top: 0;
+    top: -100%;
+    z-index: 1;
   }
 
   .logo {
