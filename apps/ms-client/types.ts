@@ -7,7 +7,7 @@ export interface Sentiment {
 
 export interface Emotion {
   emotion: string
-  others: FaceExpressions
+  others?: FaceExpressions
 }
 export interface User {
   id: string
