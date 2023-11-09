@@ -15,6 +15,7 @@ import { schema } from './models';
           user: process.env.DB_USER,
           password: process.env.DB_PWD,
           database: process.env.DB_NAME,
+          idleTimeoutMillis: 4000,
         });
         const db = drizzle(pool, {
           schema: schema,

@@ -24,7 +24,7 @@ export class StatisticsListener {
     } = event;
     const user = await this.usersService.findUserByNickName(nickName);
 
-    this.messagesService.createMessage({
+    await this.messagesService.createMessage({
       userId: user?.id,
       text,
       roomId,
