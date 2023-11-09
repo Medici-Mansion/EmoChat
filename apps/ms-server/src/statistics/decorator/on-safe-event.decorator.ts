@@ -11,11 +11,11 @@ function _OnSafeEvent() {
       key,
       Reflect.getMetadata(key, descriptor.value),
     ]);
-
     descriptor.value = async function (...args: any[]) {
       try {
         await originalMethod.call(this, ...args);
       } catch (err) {
+        Logger.error(JSON.stringify({ ...descriptor, key, ...target }), 'ARGS');
         Logger.error(err, err.stack, 'OnSafeEvent');
       }
     };
