@@ -13,6 +13,7 @@ export class MessagesService {
       .insert(MessageModel)
       .values([createMessageDto])
       .returning();
+
     return message[0];
   }
 }

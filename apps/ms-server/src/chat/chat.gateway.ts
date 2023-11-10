@@ -91,10 +91,7 @@ export class ChatGateway
     @MessageBody() body: SendMessageDto,
   ) {
     const {
-      data: {
-        roomId,
-        user: { nickname },
-      },
+      data: { roomId, user: { nickname = '' } = {} },
     } = client;
     const { emotion, others, message, sentiment = null } = body;
 
@@ -106,7 +103,7 @@ export class ChatGateway
     const messageCreatedDto: CreateMessageDto = {
       emotionTitle: emotion,
       mappingId: font?.mappingId,
-      nickName: client.data.user.nickname,
+      nickName: client.data.user?.nickname,
       roomName: this.roomGroupInfo[client.data.roomId] || '',
       roomId: decodeURIComponent(roomId),
       text: message,
@@ -195,7 +192,7 @@ export class ChatGateway
     client: Socket,
     editUserDto: { nickname: string; avatar: string },
   ) {
-    client.data.user.nickname = editUserDto.nickname as string;
+    client.data.user.nickname = editUserDto.nickname || '';
     client.data.user.avatar = editUserDto.avatar as string;
     return this.usersService.editUser({
       ...editUserDto,
@@ -206,7 +203,7 @@ export class ChatGateway
   // 소켓데이터 유저 아바타 추가
   private exitRoom(client: Socket) {
     const {
-      data: { roomId, user: { nickname } = {} },
+      data: { roomId, user: { nickname = '' } = {} },
     } = client;
     if (roomId) {
       client.leave(roomId);
