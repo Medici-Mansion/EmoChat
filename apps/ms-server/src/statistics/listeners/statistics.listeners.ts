@@ -13,26 +13,30 @@ export class StatisticsListener {
 
   @OnSafeEvent('message.created')
   async handleMessageCreatedEvent(event: CreateMessageDto) {
-    const {
-      nickName,
-      emotionTitle,
-      mappingId,
-      roomName,
-      roomId,
-      text,
-      others,
-    } = event;
-    const user = await this.usersService.findUserByNickName(nickName);
+    try {
+      const {
+        nickName,
+        emotionTitle,
+        mappingId,
+        roomName,
+        roomId,
+        text,
+        others,
+      } = event;
+      const user = await this.usersService.findUserByNickName(nickName);
 
-    await this.messagesService.createMessage({
-      userId: user?.id,
-      text,
-      roomId,
-      room: roomName,
-      nickname: nickName,
-      emotion: emotionTitle,
-      fontToEmotionId: mappingId,
-      ...others,
-    });
+      await this.messagesService.createMessage({
+        userId: user?.id,
+        text,
+        roomId,
+        room: roomName,
+        nickname: nickName,
+        emotion: emotionTitle,
+        fontToEmotionId: mappingId,
+        ...others,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
