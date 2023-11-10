@@ -7,8 +7,12 @@ interface RoomInfoUser {
   user: User
 }
 interface RoomInfo {
-  roomId: string
+  id: string
   roomName: string
+  createdAt: string
+  displayName: string
+  maxUserCount: number
+  category: string
 }
 
 interface Font {

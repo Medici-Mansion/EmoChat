@@ -19,6 +19,7 @@ import { SendMessageDto } from './dtos/message.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateMessageDto } from '@/messages/message.dto';
 import { ChatroomsService } from '@/chatrooms/chatrooms.service';
+import { ChatRoomModel } from '@/db/models/chat-room.model';
 
 @WebSocketGateway({
   cors: {
@@ -38,11 +39,12 @@ export class ChatGateway
   async onModuleInit() {
     const rooms = await this.chatRoomsService.getChatRooms();
     rooms.forEach((room) => {
-      this.roomInfo.set(room.id, room.roomName);
+      this.roomInfo.set(room.id, room);
     });
   }
 
-  private roomInfo: Map<string, string> = new Map();
+  private roomInfo: Map<string, InferSelectModel<typeof ChatRoomModel>> =
+    new Map();
 
   private roomGroupInfo = {
     '9f8bbd24-9d98-4580-927f-15168791c121': 'Group A',
@@ -138,16 +140,16 @@ export class ChatGateway
   }
 
   @SubscribeMessage('ROOM_SETTING')
-  handleRoomSetting(
+  async handleRoomSetting(
     @ConnectedSocket() client: Socket,
     @MessageBody() roomSettingParam: { roomName: string },
   ) {
     if (client.data.roomId && roomSettingParam?.roomName) {
-      this.chatRoomsService.updateRoomNameById({
+      const newRoom = await this.chatRoomsService.updateRoomNameById({
         roomId: client.data.roomId,
         ...roomSettingParam,
       });
-      this.roomInfo.set(client.data.roomId, roomSettingParam.roomName);
+      this.roomInfo.set(client.data.roomId, newRoom);
       this.serverRoomChange();
     }
   }
@@ -218,15 +220,12 @@ export class ChatGateway
   private async serverRoomChange(roomChangeArgs?: Partial<GetServerRoomDto>) {
     const { isEmit } = roomChangeArgs || { isEmit: true };
 
-    const response = [];
+    const response: InferSelectModel<typeof ChatRoomModel>[] = [];
     const keys = this.roomInfo.keys();
     while (true) {
       const { value, done } = keys.next();
       if (done) break;
-      const temp = {};
-      temp['roomId'] = value;
-      temp['roomName'] = this.roomInfo.get(value);
-      response.push(temp);
+      response.push(this.roomInfo.get(value));
     }
     if (isEmit) {
       this.io.server.emit('ROOM_CHANGE', response);
