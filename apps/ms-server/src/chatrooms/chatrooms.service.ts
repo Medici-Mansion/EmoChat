@@ -23,7 +23,6 @@ export class ChatroomsService {
       .set({ roomName })
       .where(eq(ChatRoomModel.id, roomId))
       .returning();
-
-    return newRoom;
+    return newRoom[0];
   }
 }

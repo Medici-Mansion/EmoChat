@@ -91,8 +91,9 @@ const RoomPage = ({
     },
     onRoomChanged(rooms) {
       if (rooms?.length) {
-        const newRoomInfo = rooms.find((room) => room.roomId === roomName)
+        const newRoomInfo = rooms.find((room) => room.id === roomName)
         if (newRoomInfo) {
+          console.log(newRoomInfo)
           setRoomInfo(() => newRoomInfo)
         }
       }
