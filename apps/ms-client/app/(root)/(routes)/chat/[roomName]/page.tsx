@@ -73,7 +73,7 @@ const RoomPage = ({
         setUsers(users)
       })
 
-      socket.listen('RESERVE_MESSAGE', (sender) => {
+      socket.listen(`ROOM:${roomName}`, (sender) => {
         setMessage((prev) => [...prev, { ...sender, createdAt: new Date() }])
         requestIdleCallback(() => {
           if (chatScroller?.current) {
@@ -113,6 +113,8 @@ const RoomPage = ({
     async ({ message, sentiment }: RoomFormValue) => {
       const { emotion = 'neutral', others } = emotionRef.current
       socket.emit('SEND_MESSAGE', {
+        roomId: roomName,
+        userId: info?.id || '',
         message,
         emotion,
         sentiment: sentiment,
