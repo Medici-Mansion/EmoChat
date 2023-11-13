@@ -22,6 +22,7 @@ import { ChatroomsService } from '@/chatrooms/chatrooms.service';
 import { ChatRoomModel } from '@/db/models/chat-room.model';
 import { USER_UNIQUE_KEY } from '@/common/common.constants';
 
+
 @WebSocketGateway({
   cors: {
     origin: '*',
