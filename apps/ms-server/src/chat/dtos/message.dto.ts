@@ -9,6 +9,8 @@ export class faceExpressions {
 }
 
 export class SendMessageDto {
+  roomId: string;
+  userId?: string;
   message: string;
   emotion: string;
   ratio: number;

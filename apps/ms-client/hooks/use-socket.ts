@@ -53,6 +53,10 @@ const useSocket = ({
         }
       })
       socket.on('connect', () => {
+        const userId = localStorage.getItem(USER_UNIQUE_KEY)
+        if (userId) {
+          socket.emit('GET_ME', userId)
+        }
         if (isError) {
           setIsError(null)
         }

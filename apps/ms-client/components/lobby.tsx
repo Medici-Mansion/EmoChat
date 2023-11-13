@@ -6,7 +6,6 @@ import { Users } from 'lucide-react'
 import Link from 'next/link'
 import { RoomInfo } from '@/socket'
 
-
 const LobbyScreen = () => {
   const [rooms, setRooms] = useState<RoomInfo[]>([])
   useSocket({
@@ -15,7 +14,6 @@ const LobbyScreen = () => {
       setRooms(() => newRooms)
     },
   })
-  console.log(rooms, '<<rooms')
 
   return (
     <div
