@@ -27,6 +27,8 @@ interface Message {
 }
 
 interface SendMessageData {
+  roomId: string
+  userId: string
   message: string
   emotion: string
   sentiment?: string
@@ -48,6 +50,7 @@ interface ServerToClientEvents {
   RESERVE_MESSAGE: (sender: ReservedMessage) => void
   USER_SETTING: (user: User) => void
   [key: `USERS:${string}`]: (users: RoomInfoUser[]) => void
+  [key: `ROOM:${string}`]: (sender: ReservedMessage) => void
 }
 
 interface ClientToServerEvents {
@@ -62,6 +65,7 @@ interface ClientToServerEvents {
   EXIT_ROOM: () => void
   USER_SETTING: (data: any, cb?: (user: RoomInfoUser) => void) => void
   ROOM_SETTING: (data: { roomName: string }) => void
+  GET_ME: (userId: string) => void
 }
 
 class DefaultSocket extends S<ServerToClientEvents, ClientToServerEvents> {}

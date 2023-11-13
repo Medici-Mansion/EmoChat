@@ -22,7 +22,6 @@ import { ChatroomsService } from '@/chatrooms/chatrooms.service';
 import { ChatRoomModel } from '@/db/models/chat-room.model';
 import { USER_UNIQUE_KEY } from '@/common/common.constants';
 
-
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -93,11 +92,12 @@ export class ChatGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() body: SendMessageDto,
   ) {
+    this.logger.log(`[SEND_MESSAGE] : ${JSON.stringify(body)}`);
     const {
-      data: { roomId, user: { nickname = '' } = {} },
+      data: { user: { nickname = '' } = {} },
     } = client;
-    const { emotion, others, message, sentiment = null } = body;
-
+    const { roomId, userId, emotion, others, message, sentiment = null } = body;
+    if (!userId) return;
     const currentFont = !sentiment
       ? await this.sentimentsService.getDefaultFontByEmotion(emotion)
       : await this.sentimentsService.getFontByEmotionAndSentiment(sentiment);
@@ -107,6 +107,7 @@ export class ChatGateway
       emotionTitle: emotion,
       mappingId: font?.mappingId,
       nickName: client.data.user?.nickname,
+      userId,
       roomName: this.roomGroupInfo[client.data.roomId] || '',
       roomId: decodeURIComponent(roomId),
       text: message,
@@ -114,14 +115,14 @@ export class ChatGateway
     };
 
     this.eventEmitter.emit('message.created', messageCreatedDto);
-
-    if (client.id && client.data?.user) {
-      this.io.server.to(roomId).emit('RESERVE_MESSAGE', {
-        user: client.data.user,
+    const user = await this.usersService.findUserdById(userId);
+    if (user) {
+      this.io.server.emit(`ROOM:${roomId}`, {
+        user,
         message,
         nickname,
         id: client.id,
-        userId: client.data.user.id,
+        userId,
         font,
       });
     }
@@ -187,11 +188,11 @@ export class ChatGateway
     const userId = client?.handshake?.auth[USER_UNIQUE_KEY];
     if (!userId) client.disconnect(true);
     const user = await this.usersService.findUserdById(userId);
+    client.emit('WELCOME', user);
     client.data.user = user;
 
     this.logger.debug(`CONNECTED : ${client.id}`);
     this.logger.debug(`NAMESPACE : ${client.nsp.name}`);
-    client.emit('WELCOME', user);
     this.serverRoomChange();
     return user;
   }
@@ -200,6 +201,15 @@ export class ChatGateway
     this.logger.log(`DISCONNECTED : ${client.id}`);
     this.exitRoom(client);
     this.io.server.of('/').adapter.del(client.id, client.id);
+  }
+
+  @SubscribeMessage('GET_ME')
+  async getME(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() userId: string,
+  ) {
+    const user = await this.usersService.findUserdById(userId);
+    client.emit('WELCOME', user);
   }
 
   private async editUserSetting(
