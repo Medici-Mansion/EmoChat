@@ -22,6 +22,7 @@ import { ChatroomsService } from '@/chatrooms/chatrooms.service';
 import { ChatRoomModel } from '@/db/models/chat-room.model';
 import { USER_UNIQUE_KEY } from '@/common/common.constants';
 
+
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -211,7 +212,6 @@ export class ChatGateway
     const user = await this.usersService.findUserdById(userId);
     client.emit('WELCOME', user);
   }
-
   private async editUserSetting(
     client: Socket,
     editUserDto: { nickname: string; avatar: string },
