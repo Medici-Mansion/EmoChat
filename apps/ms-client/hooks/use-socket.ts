@@ -24,13 +24,23 @@ const useSocket = ({
   onRoomChanged,
   onUserUpdated,
 }: useSocketProps) => {
-  const { manager } = useContext(SocketContext) || {}
+  const { manager, setInfo } = useContext(SocketContext) || {}
   if (!manager) {
     throw new Error('Provier is not founded.')
   }
 
   const [isError, setIsError] = useState<string | null>(null)
-  const socket = useRef(manager.create_socket(nsp)).current
+  const socket = useRef(
+    manager.create_socket(nsp, {
+      async auth(cb) {
+        let userId = localStorage.getItem(USER_UNIQUE_KEY)
+        if (!userId) return
+        cb({
+          [USER_UNIQUE_KEY]: userId,
+        })
+      },
+    }),
+  ).current
 
   useEffect(() => {
     if (socket && typeof window !== 'undefined') {
@@ -43,20 +53,17 @@ const useSocket = ({
         }
       })
       socket.on('connect', () => {
-        socket.emit(
-          'USER_JOIN',
-          localStorage.getItem(USER_UNIQUE_KEY),
-          (user) => {
-            localStorage.setItem(USER_UNIQUE_KEY, user.id)
-            if (user) {
-              onUserUpdated && onUserUpdated(user)
-            }
-          },
-        )
         if (isError) {
           setIsError(null)
         }
         onConnect && onConnect(socket)
+      })
+      socket.listen('WELCOME', (user) => {
+        if (user) {
+          setInfo?.(user)
+          localStorage.setItem(USER_UNIQUE_KEY, user.id)
+          onUserUpdated && onUserUpdated(user)
+        }
       })
 
       socket.listen('ROOM_CHANGE', (rooms) => {
