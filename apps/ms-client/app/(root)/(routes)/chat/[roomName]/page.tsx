@@ -93,7 +93,6 @@ const RoomPage = ({
       if (rooms?.length) {
         const newRoomInfo = rooms.find((room) => room.id === roomName)
         if (newRoomInfo) {
-          console.log(newRoomInfo)
           setRoomInfo(() => newRoomInfo)
         }
       }
@@ -162,7 +161,6 @@ const RoomPage = ({
       }
     }
   }, [])
-
   return (
     <>
       <div className="p-3 py-2 hidden sm:block">
@@ -229,16 +227,18 @@ const RoomPage = ({
               />
             </div>
           </div>
-          {messages.map(({ id, message, createdAt, font, userId }, index) => (
-            <ChatBox
-              sender={usersMap[userId]}
-              font={font}
-              content={message}
-              createdAt={createdAt}
-              isMe={id === socket.id}
-              key={id + index + createdAt}
-            />
-          ))}
+          {messages.map(
+            ({ id, userId, message, createdAt, font, user }, index) => (
+              <ChatBox
+                sender={user}
+                font={font}
+                content={message}
+                createdAt={createdAt}
+                isMe={userId === info?.id}
+                key={id + index + createdAt}
+              />
+            ),
+          )}
         </div>
 
         <form

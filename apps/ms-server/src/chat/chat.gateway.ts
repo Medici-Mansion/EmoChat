@@ -20,6 +20,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateMessageDto } from '@/messages/message.dto';
 import { ChatroomsService } from '@/chatrooms/chatrooms.service';
 import { ChatRoomModel } from '@/db/models/chat-room.model';
+import { USER_UNIQUE_KEY } from '@/common/common.constants';
 
 @WebSocketGateway({
   cors: {
@@ -70,7 +71,6 @@ export class ChatGateway
   ) {
     client.join(roomId);
     client.data.roomId = roomId;
-    client.to(roomId).emit('WELCOME', client.data);
     this.serverRoomChange();
     return this.getJoinedUser(roomId);
   }
@@ -88,7 +88,7 @@ export class ChatGateway
   }
 
   @SubscribeMessage('SEND_MESSAGE')
-  async handleSendMEssage(
+  async handleSendMessage(
     @ConnectedSocket() client: Socket,
     @MessageBody() body: SendMessageDto,
   ) {
@@ -114,13 +114,16 @@ export class ChatGateway
 
     this.eventEmitter.emit('message.created', messageCreatedDto);
 
-    this.io.server.to(roomId).emit('RESERVE_MESSAGE', {
-      message,
-      nickname,
-      id: client.id,
-      userId: client.data.user.id,
-      font,
-    });
+    if (client.id && client.data?.user) {
+      this.io.server.to(roomId).emit('RESERVE_MESSAGE', {
+        user: client.data.user,
+        message,
+        nickname,
+        id: client.id,
+        userId: client.data.user.id,
+        font,
+      });
+    }
   }
 
   @SubscribeMessage('USER_SETTING')
@@ -179,9 +182,17 @@ export class ChatGateway
     return this.sentimentsService.getSentimentsByEmotion(emotion);
   }
 
-  handleConnection(@ConnectedSocket() client: Socket) {
+  async handleConnection(@ConnectedSocket() client: Socket) {
+    const userId = client?.handshake?.auth[USER_UNIQUE_KEY];
+    if (!userId) client.disconnect(true);
+    const user = await this.usersService.findUserdById(userId);
+    client.data.user = user;
+
     this.logger.debug(`CONNECTED : ${client.id}`);
     this.logger.debug(`NAMESPACE : ${client.nsp.name}`);
+    client.emit('WELCOME', user);
+    this.serverRoomChange();
+    return user;
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -190,7 +201,7 @@ export class ChatGateway
     this.io.server.of('/').adapter.del(client.id, client.id);
   }
 
-  private editUserSetting(
+  private async editUserSetting(
     client: Socket,
     editUserDto: { nickname: string; avatar: string },
   ) {

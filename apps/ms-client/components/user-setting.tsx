@@ -55,9 +55,6 @@ const UserSetting = () => {
   const [activeId, setActiveId] = useState(info?.avatar || '0')
   const { socket } = useSocket({
     nsp: '/',
-    onUserUpdated(user) {
-      setInfo?.(user)
-    },
   })
 
   const onSubmit = (data: UserSettingParams) => {
