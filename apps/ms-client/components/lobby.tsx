@@ -15,7 +15,6 @@ const LobbyScreen = () => {
       setRooms(() => newRooms)
     },
   })
-  console.log(rooms, '<<rooms')
 
   return (
     <div
