@@ -71,7 +71,7 @@ export class ChatGateway
   ) {
     client.join(roomId);
     client.data.roomId = roomId;
-    this.serverRoomChange();
+    await this.serverRoomChange();
     return this.getJoinedUser(roomId);
   }
 
@@ -211,7 +211,6 @@ export class ChatGateway
     const user = await this.usersService.findUserdById(userId);
     client.emit('WELCOME', user);
   }
-
   private async editUserSetting(
     client: Socket,
     editUserDto: { nickname: string; avatar: string },
