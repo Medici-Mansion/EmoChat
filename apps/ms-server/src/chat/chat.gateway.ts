@@ -22,7 +22,6 @@ import { ChatroomsService } from '@/chatrooms/chatrooms.service';
 import { ChatRoomModel } from '@/db/models/chat-room.model';
 import { USER_UNIQUE_KEY } from '@/common/common.constants';
 
-
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -72,7 +71,7 @@ export class ChatGateway
   ) {
     client.join(roomId);
     client.data.roomId = roomId;
-    this.serverRoomChange();
+    await this.serverRoomChange();
     return this.getJoinedUser(roomId);
   }
 

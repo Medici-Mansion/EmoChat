@@ -28,6 +28,7 @@ import RoomSetting from '@/components/room-setting'
 import DefaultAvatar from '@/components/default-avatar'
 import { SocketContext } from '@/components/providers/socket-provier'
 import AnimatedRefresh from '@/components/animate-refresh'
+import { USER_UNIQUE_KEY } from '@/constants'
 
 interface RoomFormValue {
   message: string
@@ -65,14 +66,15 @@ const RoomPage = ({
 
   const { socket } = useSocket({
     nsp: '/',
-    onMounted(socket) {
+    onConnect() {
       socket.emit('JOIN_ROOM', roomName, (users) => {
         setUsers(users)
       })
       socket.listen(`USERS:${roomName}`, (users) => {
         setUsers(users)
       })
-
+    },
+    onMounted(socket) {
       socket.listen(`ROOM:${roomName}`, (sender) => {
         setMessage((prev) => [...prev, { ...sender, createdAt: new Date() }])
         requestIdleCallback(() => {
@@ -84,10 +86,6 @@ const RoomPage = ({
           }
         })
       })
-    },
-    onUnmounted(socket) {
-      socket.emit('EXIT_ROOM')
-      socket.off(`USERS:${roomName}`)
     },
     onRoomChanged(rooms) {
       if (rooms?.length) {
@@ -114,7 +112,7 @@ const RoomPage = ({
       const { emotion = 'neutral', others } = emotionRef.current
       socket.emit('SEND_MESSAGE', {
         roomId: roomName,
-        userId: info?.id || '',
+        userId: info?.id || localStorage.getItem(USER_UNIQUE_KEY) || '',
         message,
         emotion,
         sentiment: sentiment,
@@ -122,7 +120,7 @@ const RoomPage = ({
       })
       form.resetField('message')
     },
-    [form, socket],
+    [form, info?.id, roomName, socket],
   )
 
   const handleScroll = () => {
@@ -152,6 +150,9 @@ const RoomPage = ({
   )
 
   useEffect(() => {
+    socket.emit('JOIN_ROOM', roomName, (users) => {
+      setUsers(users)
+    })
     const ref = chatScroller.current
     if (ref) {
       ref.addEventListener('scroll', handleScroll)
@@ -161,8 +162,10 @@ const RoomPage = ({
       if (ref) {
         ref.removeEventListener('scroll', handleScroll)
       }
+      socket.emit('EXIT_ROOM')
+      socket.off(`USERS:${roomName}`)
     }
-  }, [])
+  }, [roomName, socket])
   return (
     <>
       <div className="p-3 py-2 hidden sm:block">
