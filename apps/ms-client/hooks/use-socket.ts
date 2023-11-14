@@ -84,15 +84,14 @@ const useSocket = ({
     return () => {
       socket.off('connect')
     }
-  }, [isError, onConnect, onRoomChanged, socket])
+  }, [isError, onConnect, onRoomChanged, onUserUpdated, setInfo, socket])
   useEffect(() => {
-    if (socket.connected) {
-      onMounted && onMounted(socket)
-    }
+    onMounted && onMounted(socket)
+
     return () => {
       onUnmounted && onUnmounted(socket)
     }
-  }, [socket.connected])
+  }, [])
   return {
     manager,
     socket: socket,
