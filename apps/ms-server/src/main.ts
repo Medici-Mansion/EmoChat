@@ -4,6 +4,7 @@ import * as dotnet from 'dotenv';
 dotnet.config();
 
 async function bootstrap() {
+  const PORT = process.env.PORT || 4000;
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('/api');
   const origin = process.env.CLIENT_URL.split(',');
@@ -11,6 +12,6 @@ async function bootstrap() {
     origin,
     credentials: true,
   });
-  await app.listen(4000);
+  await app.listen(PORT);
 }
 bootstrap();
