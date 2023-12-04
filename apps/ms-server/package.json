@@ -1,10 +1,24 @@
 {
-  "name": "@emochat/server",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "name": "@emochat/client",
+  "version": "1.1.0",
   "private": true,
-  "license": "UNLICENSED",
+  "author": {
+    "name": "Team-Medici",
+    "email": "raymondanything@gmail.com",
+    "url": "https://medici-mansion.com/"
+  },
+  "licenses" : [{
+    "type": "MIT",
+    "url": "http://www.opensource.org/licenses/mit-license.php"
+    },
+    {
+        "type": "Apache-2.0",
+        "url": "http://opensource.org/licenses/apache2.0.php"
+  }],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Medici-Mansion/EmoChat"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
