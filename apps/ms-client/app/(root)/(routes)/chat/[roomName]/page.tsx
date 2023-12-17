@@ -1,7 +1,6 @@
 'use client'
-import Link from 'next/link'
 import * as faceapi from 'face-api.js'
-import { ArrowLeft, RotateCw, Send, Users } from 'lucide-react'
+import { Send, Users } from 'lucide-react'
 import React, {
   useCallback,
   useContext,
@@ -15,7 +14,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 
 import { ReservedMessage, RoomInfo, RoomInfoUser } from '@/socket'
 import { Emotion, Sentiment, User, WithParam } from '@/types'
-import { cn } from '@/lib/utils'
 import { fadeInOutMotion } from '@/motions'
 
 import useSocket from '@/hooks/use-socket'
@@ -169,18 +167,6 @@ const RoomPage = ({
   return (
     <>
       <div className="p-3 py-2 hidden sm:block">
-        <Link
-          href="/lobby"
-          className="flex space-x-1 items-center py-1 rounded-xl min-w-fit w-full opacity-60"
-        >
-          <div
-            className={cn(
-              'w-9 h-9 flex items-center justify-center rounded-full',
-            )}
-          >
-            <ArrowLeft size={30} />
-          </div>
-        </Link>
         <div className="pt-6">
           <AnimatePresence mode="popLayout">
             {Object.keys(usersMap).map((userId) => {

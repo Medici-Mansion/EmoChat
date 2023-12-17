@@ -51,7 +51,7 @@ const JoinPage = () => {
       if (response.id) {
         localStorage.setItem(USER_UNIQUE_KEY, response.id)
       }
-      router.push('/lobby')
+      router.push('/chat/9f8bbd24-9d98-4580-927f-15168791c121')
     } catch (err) {
       console.log(err)
     }

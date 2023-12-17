@@ -57,9 +57,9 @@ const Header = () => {
       className="bg-secondary w-screen h-12 flex items-center px-4 text-2xl justify-between border-b"
     >
       <div className="flex pl-2 space-x-3 items-center">
-        <Link href="/lobby" className="w-6 h-6 relative">
+        <div className="w-6 h-6 relative">
           <Image src="/images/logo.png" alt="logo" fill />
-        </Link>
+        </div>
         <h1 className="logo text-xl">EmoChat</h1>
       </div>
       <div className="flex items-center space-x-4">
