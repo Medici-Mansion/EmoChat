@@ -133,7 +133,7 @@ const UserSetting = () => {
                             alt="avatar"
                             fill
                             className={cn(
-                              'aspect-square border p-2 rounded-lg ',
+                              'aspect-square border p-2 rounded-lg',
                               activeId === img.value
                                 ? 'border-[#0C8AFF] border-2 duration-300'
                                 : 'opacity-50',

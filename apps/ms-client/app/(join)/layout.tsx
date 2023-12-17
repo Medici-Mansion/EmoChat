@@ -10,7 +10,7 @@ const JoinLayout = async ({ children }: PropsWithChildren) => {
   if (userId) {
     const user = await checkUser(userId)
     if (user) {
-      return redirect('/lobby')
+      return redirect('/chat/9f8bbd24-9d98-4580-927f-15168791c121')
     }
   }
   return (

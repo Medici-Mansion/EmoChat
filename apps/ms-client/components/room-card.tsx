@@ -1,9 +1,7 @@
 import React from 'react'
-import Face from './svg/face'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { RoomInfo } from '@/socket'
 
 interface RoomCardProps {
   roomName: string
